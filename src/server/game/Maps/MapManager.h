@@ -18,16 +18,14 @@
 #ifndef TRINITY_MAPMANAGER_H
 #define TRINITY_MAPMANAGER_H
 
-#include "Object.h"
 #include "Map.h"
 #include "MapInstanced.h"
 #include "GridStates.h"
 #include "MapUpdater.h"
 #include "UniqueTrackablePtr.h"
-#include <boost/dynamic_bitset.hpp>
+#include <boost/dynamic_bitset_fwd.hpp>
 
 class Transport;
-struct TransportCreatureProto;
 
 class TC_GAME_API MapManager
 {
@@ -161,7 +159,7 @@ class TC_GAME_API MapManager
         MapMapType i_maps;
         IntervalTimer i_timer;
 
-        InstanceIds _freeInstanceIds;
+        std::unique_ptr<InstanceIds> _freeInstanceIds;
         uint32 _nextInstanceId;
         MapUpdater m_updater;
 
