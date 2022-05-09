@@ -68,7 +68,7 @@ class TC_COMMON_API Log
         void SetSynchronous();  // Not threadsafe - should only be called from main() after all threads are joined
         void LoadFromConfig();
         void Close();
-        bool ShouldLog(std::string const& type, LogLevel level) const;
+        bool ShouldLog(std::string_view type, LogLevel level) const;
         bool SetLogLevel(std::string const& name, int32 level, bool isLogger = true);
 
         template<typename... Args>
@@ -103,7 +103,7 @@ class TC_COMMON_API Log
         static std::string GetTimestampStr();
         void write(std::unique_ptr<LogMessage> msg) const;
 
-        Logger const* GetLoggerByType(std::string const& type) const;
+        Logger const* GetLoggerByType(std::string_view type) const;
         Appender* GetAppenderByName(std::string_view name);
         uint8 NextAppenderId();
         void CreateAppenderFromConfig(std::string const& name);
@@ -116,7 +116,7 @@ class TC_COMMON_API Log
 
         std::unordered_map<uint8, AppenderCreatorFn> appenderFactory;
         std::unordered_map<uint8, std::unique_ptr<Appender>> appenders;
-        std::unordered_map<std::string, std::unique_ptr<Logger>> loggers;
+        std::unordered_map<std::string_view, std::unique_ptr<Logger>> loggers;
         uint8 AppenderId;
         LogLevel lowestLogLevel;
 
