@@ -22,6 +22,7 @@
 #include "Group.h"
 #include "GroupMgr.h"
 #include "Log.h"
+#include "Loot.h"
 #include "MiscPackets.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
@@ -449,33 +450,6 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket& recvData)
     group->SetMasterLooterGuid(lootMaster);
     group->SetLootThreshold((ItemQualities)lootThreshold);
     group->SendUpdate();
-}
-
-void WorldSession::HandleLootRoll(WorldPacket& recvData)
-{
-    ObjectGuid guid;
-    uint32 itemSlot;
-    uint8  rollType;
-    recvData >> guid;                  // guid of the item rolled
-    recvData >> itemSlot;
-    recvData >> rollType;              // 0: pass, 1: need, 2: greed
-
-    Group* group = GetPlayer()->GetGroup();
-    if (!group)
-        return;
-
-    if (!group->CountRollVote(GetPlayer()->GetGUID(), guid, rollType))
-        return;
-
-    switch (rollType)
-    {
-        case ROLL_NEED:
-            GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED, 1);
-            break;
-        case ROLL_GREED:
-            GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED, 1);
-            break;
-    }
 }
 
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)

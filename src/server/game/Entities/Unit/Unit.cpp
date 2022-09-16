@@ -46,6 +46,7 @@
 #include "InstanceScript.h"
 #include "Item.h"
 #include "Log.h"
+#include "Loot.h"
 #include "LootMgr.h"
 #include "MotionMaster.h"
 #include "MovementGenerator.h"
@@ -11030,7 +11031,6 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
 
         Player* looter = player;
         Group* group = player->GetGroup();
-        bool hasLooterGuid = false;
 
         if (group)
         {
@@ -11043,26 +11043,12 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
                 {
                     looter = ObjectAccessor::FindPlayer(group->GetLooterGuid());
                     if (looter)
-                    {
-                        hasLooterGuid = true;
                         creature->SetLootRecipient(looter);   // update creature loot recipient to the allowed looter.
-                    }
                 }
             }
         }
         else
-        {
             player->SendDirectMessage(&data);
-
-            if (creature)
-            {
-                WorldPacket data2(SMSG_LOOT_LIST, 8 + 1 + 1);
-                data2 << creature->GetGUID();
-                data2 << uint8(0); // unk1
-                data2 << uint8(0); // no group looter
-                player->SendMessageToSet(&data2, true);
-            }
-        }
 
         // Generate loot before updating looter
         if (creature)
@@ -11076,17 +11062,11 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
             if (creature->GetLootMode() > 0)
                 loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
 
-            if (group)
-            {
-                if (hasLooterGuid)
-                    group->SendLooter(creature, looter);
-                else
-                    group->SendLooter(creature, nullptr);
+            loot->NotifyLootList(creature->GetMap(), creature->GetGUID());
 
-                // Update round robin looter only if the creature had loot
-                if (!loot->empty())
-                    group->UpdateLooterGuid(creature);
-            }
+            // Update round robin looter only if the creature had loot
+            if (group && !loot->empty())
+                group->UpdateLooterGuid(creature);
         }
 
         player->RewardPlayerAndGroupAtKill(victim, false);

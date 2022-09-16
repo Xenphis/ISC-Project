@@ -66,6 +66,7 @@
 #include "Language.h"
 #include "LFGMgr.h"
 #include "Log.h"
+#include "Loot.h"
 #include "LootItemStorage.h"
 #include "LootMgr.h"
 #include "LootPackets.h"
@@ -1835,6 +1836,7 @@ void Player::RemoveFromWorld()
         ObjectGuid lootGuid = GetLootGUID();
         if (!lootGuid.IsEmpty())
             m_session->DoLootRelease(lootGuid);
+        m_lootRolls.clear();
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
     }
@@ -8034,6 +8036,20 @@ bool Player::CheckAmmoCompatibility(ItemTemplate const* ammo_proto) const
 
 /*  If in a battleground a player dies, and an enemy removes the insignia, the player's bones is lootable
     Called by remove insignia spell effect    */
+LootRoll* Player::GetLootRoll(ObjectGuid const& lootObject, uint32 lootListId)
+{
+    auto itr = std::find_if(m_lootRolls.begin(), m_lootRolls.end(), [&](LootRoll const* roll)
+    {
+        return roll->IsLootItem(lootObject, lootListId);
+    });
+    return itr != m_lootRolls.end() ? *itr : nullptr;
+}
+
+void Player::RemoveLootRoll(LootRoll* roll)
+{
+    m_lootRolls.erase(std::remove(m_lootRolls.begin(), m_lootRolls.end(), roll), m_lootRolls.end());
+}
+
 void Player::RemovedInsignia(Player* looterPlr)
 {
     // If player is not in battleground and not in worldpvpzone
@@ -8163,28 +8179,6 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
                 go->getFishLoot(loot, this);
             else if (loot_type == LOOT_FISHING_JUNK)
                 go->getFishLootJunk(loot, this);
-
-            if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.groupLootRules)
-            {
-                if (Group* group = GetGroup())
-                {
-                    switch (group->GetLootMethod())
-                    {
-                        case GROUP_LOOT:
-                            // GroupLoot: rolls items over threshold. Items with quality < threshold, round robin
-                            group->GroupLoot(loot, go);
-                            break;
-                        case NEED_BEFORE_GREED:
-                            group->NeedBeforeGreed(loot, go);
-                            break;
-                        case MASTER_LOOT:
-                            group->MasterLoot(loot, go);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
 
             go->SetLootState(GO_ACTIVATED, this);
         }
@@ -8360,29 +8354,6 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
                 return;
             }
 
-            if (loot->loot_type == LOOT_NONE)
-            {
-                // for creature, loot is filled when creature is killed.
-                if (Group* group = creature->GetLootRecipientGroup())
-                {
-                    switch (group->GetLootMethod())
-                    {
-                        case GROUP_LOOT:
-                            // GroupLoot: rolls items over threshold. Items with quality < threshold, round robin
-                            group->GroupLoot(loot, creature);
-                            break;
-                        case NEED_BEFORE_GREED:
-                            group->NeedBeforeGreed(loot, creature);
-                            break;
-                        case MASTER_LOOT:
-                            group->MasterLoot(loot, creature);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-
             // if loot is already skinning loot then don't do anything else
             if (loot->loot_type == LOOT_SKINNING)
             {
@@ -8447,7 +8418,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
         SendDirectMessage(packet.Write());
 
         // add 'this' player as one of the players that are looting 'loot'
-        loot->AddLooter(GetGUID());
+        loot->OnLootOpened(GetMap(), guid, GetGUID());
 
         if (loot_type == LOOT_CORPSE && !guid.IsItem())
             SetUnitFlag(UNIT_FLAG_LOOTING);
@@ -11470,13 +11441,12 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
     return EQUIP_ERR_OK;
 }
 
-InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, WorldObject const* lootedObject) const
+InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, Map const* map) const
 {
     if (!GetGroup() || !GetGroup()->isLFGGroup())
         return EQUIP_ERR_OK;    // not in LFG group
 
     // check if looted object is inside the lfg dungeon
-    Map const* map = lootedObject->GetMap();
     if (!sLFGMgr->inLfgDungeonMap(GetGroup()->GetGUID(), map->GetId(), map->GetDifficultyID()))
         return EQUIP_ERR_OK;
 
@@ -23909,7 +23879,8 @@ PartyResult Player::CanUninviteFromGroup(ObjectGuid guidMember) const
         if (state == lfg::LFG_STATE_FINISHED_DUNGEON)
             return ERR_PARTY_LFG_BOOT_DUNGEON_COMPLETE;
 
-        if (grp->isRollLootActive())
+        Player* member = ObjectAccessor::FindConnectedPlayer(guidMember);
+        if (member && !member->m_lootRolls.empty())
             return ERR_PARTY_LFG_BOOT_LOOT_ROLLS;
 
         /// @todo Should also be sent when anyone has recently left combat, with an aprox ~5 seconds timer.
@@ -24495,28 +24466,8 @@ bool Player::IsBaseRuneSlotsOnCooldown(RuneType runeType) const
 void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast, bool createdByPlayer)
 {
     Loot loot;
-    loot.FillLoot (loot_id, store, this, true);
-
-    uint32 max_slot = loot.GetMaxSlotInLootFor(this);
-    for (uint32 i = 0; i < max_slot; ++i)
-    {
-        LootItem* lootItem = loot.LootItemInSlot(i, this);
-
-        ItemPosCountVec dest;
-        InventoryResult msg = CanStoreNewItem(bag, slot, dest, lootItem->itemid, lootItem->count);
-        if (msg != EQUIP_ERR_OK && slot != NULL_SLOT)
-            msg = CanStoreNewItem(bag, NULL_SLOT, dest, lootItem->itemid, lootItem->count);
-        if (msg != EQUIP_ERR_OK && bag != NULL_BAG)
-            msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, lootItem->itemid, lootItem->count);
-        if (msg != EQUIP_ERR_OK)
-        {
-            SendEquipError(msg, nullptr, nullptr, lootItem->itemid);
-            continue;
-        }
-
-        Item* pItem = StoreNewItem(dest, lootItem->itemid, true, lootItem->randomPropertyId);
-        SendNewItem(pItem, lootItem->count, false, createdByPlayer, broadcast);
-    }
+    loot.FillLoot(loot_id, store, this, true);
+    loot.AutoStore(this, bag, slot, broadcast, createdByPlayer);
 }
 
 void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
@@ -24598,7 +24549,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
 
         // LootItem is being removed (looted) from the container, delete it from the DB.
         if (loot->containerID > 0)
-            sLootItemStorage->RemoveStoredLootItemForContainer(loot->containerID, item->itemid, item->count, item->itemIndex);
+            sLootItemStorage->RemoveStoredLootItemForContainer(loot->containerID, item->itemid, item->count, item->LootListId);
 
     }
     else

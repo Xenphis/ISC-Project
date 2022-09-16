@@ -249,7 +249,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     return true;
 }
 
-Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(), m_groupLootTimer(0), m_PlayerDamageReq(0), _pickpocketLootRestore(0),
+Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(), m_PlayerDamageReq(0), _pickpocketLootRestore(0),
     m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_ignoreCorpseDecayRatio(false), m_wanderDistance(0.0f),
     m_boundaryCheckTime(2500), m_combatPulseTime(0), m_combatPulseDelay(0), m_reactState(REACT_AGGRESSIVE),
     m_defaultMovementType(IDLE_MOTION_TYPE), m_spawnId(0), m_equipmentId(0), m_originalEquipmentId(0),
@@ -742,20 +742,10 @@ void Creature::Update(uint32 diff)
             if (IsEngaged())
                 Unit::AIUpdateTick(diff);
 
-            if (m_groupLootTimer && !lootingGroupLowGUID.IsEmpty())
-            {
-                if (m_groupLootTimer <= diff)
-                {
-                    if (Group* group = sGroupMgr->GetGroupByGUID(lootingGroupLowGUID))
-                        group->EndRoll(&loot, GetMap());
+            loot.Update();
 
-                    m_groupLootTimer = 0;
-                    lootingGroupLowGUID.Clear();
-                }
-                else
-                    m_groupLootTimer -= diff;
-            }
-            else if (m_corpseRemoveTime <= GameTime::GetGameTime())
+            // an ongoing roll keeps the corpse around until it is resolved
+            if (!loot.HasRollsOngoing() && m_corpseRemoveTime <= GameTime::GetGameTime())
             {
                 RemoveCorpse(false);
                 TC_LOG_DEBUG("entities.unit", "Removing corpse... {} ", GetEntry());

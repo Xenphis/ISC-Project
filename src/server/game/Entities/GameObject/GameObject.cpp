@@ -135,7 +135,6 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
 
     m_spawnId = 0;
 
-    m_groupLootTimer = 0;
     m_lootGenerationTime = 0;
 
     ResetLootMode(); // restore default loot mode
@@ -768,19 +767,7 @@ void GameObject::Update(uint32 diff)
                     }
                     break;
                 case GAMEOBJECT_TYPE_CHEST:
-                    if (m_groupLootTimer)
-                    {
-                        if (m_groupLootTimer <= diff)
-                        {
-                            if (Group* group = sGroupMgr->GetGroupByGUID(lootingGroupLowGUID))
-                                group->EndRoll(&loot, GetMap());
-
-                            m_groupLootTimer = 0;
-                            lootingGroupLowGUID.Clear();
-                        }
-                        else
-                            m_groupLootTimer -= diff;
-                    }
+                    loot.Update();
 
                     // Non-consumable chest was partially looted and restock time passed, restock all loot now
                     if (GetGOInfo()->chest.consumable == 0 && GameTime::GetGameTime() >= m_restockTime)

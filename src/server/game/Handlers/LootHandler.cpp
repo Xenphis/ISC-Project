@@ -23,6 +23,7 @@
 #include "Group.h"
 #include "Item.h"
 #include "Log.h"
+#include "Loot.h"
 #include "LootItemStorage.h"
 #include "LootMgr.h"
 #include "LootPackets.h"
@@ -370,9 +371,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
             if (player->GetGUID() == loot->roundRobinPlayer)
             {
                 loot->roundRobinPlayer.Clear();
-
-                if (Group* group = player->GetGroup())
-                    group->SendLooter(creature, nullptr);
+                loot->NotifyLootList(creature->GetMap(), creature->GetGUID());
             }
             // force dynflag update to update looter and lootable info
             creature->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
@@ -381,6 +380,25 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
 
     //Player is not looking at loot list, he doesn't need to see updates on the loot list
     loot->RemoveLooter(player->GetGUID());
+}
+
+void WorldSession::HandleLootRoll(WorldPacket& recvData)
+{
+    ObjectGuid lootObject;
+    uint32 lootListId;
+    uint8  rollType;
+    recvData >> lootObject;            // guid of the object being rolled for
+    recvData >> lootListId;
+    recvData >> rollType;              // 0: pass, 1: need, 2: greed
+
+    if (rollType >= MAX_ROLL_TYPE)
+        return;
+
+    LootRoll* lootRoll = GetPlayer()->GetLootRoll(lootObject, lootListId);
+    if (!lootRoll)
+        return;
+
+    lootRoll->PlayerVote(GetPlayer(), RollVote(rollType));
 }
 
 void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)

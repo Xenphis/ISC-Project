@@ -229,9 +229,6 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SetLootRecipient(Unit* unit, Group* group = nullptr);
         bool IsLootAllowedFor(Player const* player) const;
         bool HasLootRecipient() const { return !m_lootRecipient.IsEmpty() || !m_lootRecipientGroup.IsEmpty(); }
-        uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
-        ObjectGuid lootingGroupLowGUID;                     // used to find group which is looting
-
         GameObject* GetLinkedTrap();
         void SetLinkedTrap(GameObject* linkedTrap) { m_linkedTrap = linkedTrap->GetGUID(); }
 

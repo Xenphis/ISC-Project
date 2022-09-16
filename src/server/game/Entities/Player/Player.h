@@ -64,6 +64,7 @@ class GameClient;
 class Group;
 class Guild;
 class Item;
+class LootRoll;
 class LootStore;
 class OutdoorPvP;
 class Pet;
@@ -1122,7 +1123,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasItemTotemCategory(uint32 TotemCategory) const;
         InventoryResult CanUseItem(ItemTemplate const* pItem) const;
         InventoryResult CanUseAmmo(uint32 item) const;
-        InventoryResult CanRollForItemInLFG(ItemTemplate const* item, WorldObject const* lootedObject) const;
+        InventoryResult CanRollForItemInLFG(ItemTemplate const* item, Map const* map) const;
         Item* StoreNewItem(ItemPosCountVec const& pos, uint32 itemId, bool update, int32 randomPropertyId = 0, GuidSet const& allowedLooters = GuidSet());
         Item* StoreItem(ItemPosCountVec const& pos, Item* pItem, bool update);
         Item* EquipNewItem(uint16 pos, uint32 item, bool update);
@@ -1691,6 +1692,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         ObjectGuid GetLootGUID() const { return m_lootGuid; }
         void SetLootGUID(ObjectGuid guid) { m_lootGuid = guid; }
+        LootRoll* GetLootRoll(ObjectGuid const& lootObject, uint32 lootListId);
+        void AddLootRoll(LootRoll* roll) { m_lootRolls.push_back(roll); }
+        void RemoveLootRoll(LootRoll* roll);
 
         void RemovedInsignia(Player* looterPlr);
 
@@ -2459,6 +2463,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 m_groupUpdateMask;
         uint64 m_auraRaidUpdateMask;
         bool m_bPassOnGroupLoot;
+        std::vector<LootRoll*> m_lootRolls;                     // loot rolls waiting for answer
 
         // last used pet number (for BG's)
         uint32 m_lastpetnumber;
