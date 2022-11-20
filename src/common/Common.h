@@ -65,7 +65,7 @@ enum LocaleConstant : uint8
 
 TC_COMMON_API extern char const* localeNames[TOTAL_LOCALES];
 
-TC_COMMON_API LocaleConstant GetLocaleByName(std::string const& name);
+TC_COMMON_API LocaleConstant GetLocaleByName(std::string_view name);
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

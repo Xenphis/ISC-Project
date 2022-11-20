@@ -30,7 +30,7 @@ char const* localeNames[TOTAL_LOCALES] =
   "ruRU"
 };
 
-LocaleConstant GetLocaleByName(const std::string& name)
+LocaleConstant GetLocaleByName(std::string_view name)
 {
     for (uint32 i = 0; i < TOTAL_LOCALES; ++i)
         if (name == localeNames[i])
