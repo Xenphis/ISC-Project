@@ -1299,7 +1299,7 @@ class TC_GAME_API Unit : public WorldObject
         bool isPossessing() const;
         bool isPossessing(Unit* u) const;
 
-        CharmInfo* GetCharmInfo() { return m_charmInfo; }
+        CharmInfo* GetCharmInfo() { return m_charmInfo.get(); }
         CharmInfo* InitCharmInfo();
         void DeleteCharmInfo();
         void SetPetNumberForClient(uint32 petNumber) { SetUInt32Value(UNIT_FIELD_PETNUMBER, petNumber); }
@@ -1496,11 +1496,11 @@ class TC_GAME_API Unit : public WorldObject
         virtual bool HasSpellFocus(Spell const* /*focusSpell*/ = nullptr) const { return false; }
         virtual bool IsMovementPreventedByCasting() const;
 
-        SpellHistory* GetSpellHistory() { return _spellHistory; }
-        SpellHistory const* GetSpellHistory() const { return _spellHistory; }
+        SpellHistory* GetSpellHistory() { return _spellHistory.get(); }
+        SpellHistory const* GetSpellHistory() const { return _spellHistory.get(); }
 
-        ObjectGuid m_SummonSlot[MAX_SUMMON_SLOT];
-        ObjectGuid m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
+        std::array<ObjectGuid, MAX_SUMMON_SLOT> m_SummonSlot;
+        std::array<ObjectGuid, MAX_GAMEOBJECT_SLOT> m_ObjectSlot;
 
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM)); }
         void SetShapeshiftForm(ShapeshiftForm form);
@@ -1514,8 +1514,8 @@ class TC_GAME_API Unit : public WorldObject
         float m_modSpellHitChance;
         float m_baseSpellCritChance;
 
-        float m_modAttackSpeedPct[MAX_ATTACK];
-        uint32 m_attackTimer[MAX_ATTACK];
+        std::array<float, MAX_ATTACK> m_modAttackSpeedPct;
+        std::array<uint32, MAX_ATTACK> m_attackTimer;
 
         // stat system
         void HandleStatFlatModifier(UnitMods unitMod, UnitModifierFlatType modifierType, float amount, bool apply);
@@ -1690,8 +1690,8 @@ class TC_GAME_API Unit : public WorldObject
         void FollowerRemoved(AbstractFollower* f) { m_followingMe.erase(f); }
         void RemoveAllFollowers();
 
-        MotionMaster* GetMotionMaster() { return i_motionMaster; }
-        MotionMaster const* GetMotionMaster() const { return i_motionMaster; }
+        MotionMaster* GetMotionMaster() { return i_motionMaster.get(); }
+        MotionMaster const* GetMotionMaster() const { return i_motionMaster.get(); }
         virtual MovementGeneratorType GetDefaultMovementType() const;
 
         bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }
@@ -1827,7 +1827,7 @@ class TC_GAME_API Unit : public WorldObject
         bool CanInstantCast() const { return _instantCast; }
 
         // Movement info
-        Movement::MoveSpline * movespline;
+        std::unique_ptr<Movement::MoveSpline> movespline;
 
         int32 GetHighestExclusiveSameEffectSpellGroupValue(AuraEffect const* aurEff, AuraType auraType, bool checkMiscValue = false, int32 miscValue = 0) const;
         bool IsHighestExclusiveAura(Aura const* aura, bool removeOtherAuraApplications = false);
@@ -1870,7 +1870,7 @@ class TC_GAME_API Unit : public WorldObject
 
         bool m_AutoRepeatFirstCast;
 
-        float m_createStats[MAX_STATS];
+        std::array<float, MAX_STATS> m_createStats;
 
         AttackerSet m_attackers;
         Unit* m_attacking;
@@ -1890,7 +1890,7 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 m_transformSpell;
 
-        Spell* m_currentSpells[CURRENT_MAX_SPELL];
+        std::array<Spell*, CURRENT_MAX_SPELL> m_currentSpells;
 
         AuraMap m_ownedAuras;
         AuraApplicationMap m_appliedAuras;
@@ -1898,7 +1898,7 @@ class TC_GAME_API Unit : public WorldObject
         AuraMap::iterator m_auraUpdateIterator;
         uint32 m_removedAurasCount;
 
-        AuraEffectList m_modAuras[TOTAL_AURAS];
+        std::array<AuraEffectList, TOTAL_AURAS> m_modAuras;
         AuraList m_scAuras;                        // cast singlecast auras
         AuraApplicationList m_interruptableAuras;  // auras which have interrupt mask applied on unit
         AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
@@ -1912,17 +1912,17 @@ class TC_GAME_API Unit : public WorldObject
 
         VisibleAuraMap m_visibleAuras;
 
-        float m_speed_rate[MAX_MOVE_TYPE];
+        std::array<float, MAX_MOVE_TYPE> m_speed_rate;
 
         Unit* m_charmer; // Unit that is charming ME
         Unit* m_charmed; // Unit that is being charmed BY ME
-        CharmInfo* m_charmInfo;
+        std::unique_ptr<CharmInfo> m_charmInfo;
         SharedVisionList m_sharedVision;
         GameClient* _gameClientMovingMe;
 
-        MotionMaster* i_motionMaster;
+        std::unique_ptr<MotionMaster> i_motionMaster;
 
-        uint32 m_reactiveTimer[MAX_REACTIVE];
+        std::array<uint32, MAX_REACTIVE> m_reactiveTimer;
         uint32 m_regenTimer;
 
         Vehicle* m_vehicle;
@@ -2003,7 +2003,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 _oldFactionId;           ///< faction before charm
         bool _isWalkingBeforeCharm;     ///< Are we walking before we were charmed?
 
-        SpellHistory* _spellHistory;
+        std::unique_ptr<SpellHistory> _spellHistory;
 
         PositionUpdateInfo _positionUpdateInfo;
 
