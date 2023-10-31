@@ -272,7 +272,7 @@ void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, uint32 trig
     // Attempt to select one object based on explicit chance.
     if (!ExplicitlyChanced.empty())
     {
-        float roll = (float)rand_chance();
+        float roll = rand_chance();
         for (PoolObject& candidate : candidates)
         {
             if (candidate.chance > 0)
