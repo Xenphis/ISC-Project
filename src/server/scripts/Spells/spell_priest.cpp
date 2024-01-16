@@ -22,6 +22,7 @@
  */
 
 #include "ScriptMgr.h"
+#include "CommonPredicates.h"
 #include "Creature.h"
 #include "Errors.h"
 #include "GridNotifiers.h"
@@ -284,7 +285,7 @@ class spell_pri_circle_of_healing : public SpellScript
 
         if (targets.size() > maxTargets)
         {
-            targets.sort(Trinity::HealthPctOrderPred());
+            targets.sort(Trinity::Predicates::HealthPctOrderPred());
             targets.resize(maxTargets);
         }
     }
@@ -379,7 +380,7 @@ class spell_pri_divine_hymn : public SpellScript
 
         if (targets.size() > maxTargets)
         {
-            targets.sort(Trinity::HealthPctOrderPred());
+            targets.sort(Trinity::Predicates::HealthPctOrderPred());
             targets.resize(maxTargets);
         }
     }
@@ -542,7 +543,7 @@ class spell_pri_hymn_of_hope : public SpellScript
 
         if (targets.size() > maxTargets)
         {
-            targets.sort(Trinity::PowerPctOrderPred(POWER_MANA));
+            targets.sort(Trinity::Predicates::PowerPctOrderPred(POWER_MANA));
             targets.resize(maxTargets);
         }
     }

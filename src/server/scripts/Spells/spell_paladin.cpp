@@ -22,6 +22,7 @@
  */
 
 #include "ScriptMgr.h"
+#include "CommonPredicates.h"
 #include "Containers.h"
 #include "GameTime.h"
 #include "Group.h"
@@ -670,7 +671,7 @@ class spell_pal_glyph_of_holy_light : public SpellScript
         targets.remove(GetCaster());
         if (targets.size() > maxTargets)
         {
-            targets.sort(Trinity::HealthPctOrderPred());
+            targets.sort(Trinity::Predicates::HealthPctOrderPred());
             targets.resize(maxTargets);
         }
     }

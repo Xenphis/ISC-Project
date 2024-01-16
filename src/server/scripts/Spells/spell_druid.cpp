@@ -22,6 +22,7 @@
  */
 
 #include "ScriptMgr.h"
+#include "CommonPredicates.h"
 #include "Containers.h"
 #include "GameTime.h"
 #include "Optional.h"
@@ -1868,7 +1869,7 @@ class spell_dru_wild_growth : public SpellScript
 
         if (targets.size() > maxTargets)
         {
-            targets.sort(Trinity::HealthPctOrderPred());
+            targets.sort(Trinity::Predicates::HealthPctOrderPred());
             targets.resize(maxTargets);
         }
 

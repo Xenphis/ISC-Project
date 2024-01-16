@@ -22,6 +22,7 @@
  */
 
 #include "ScriptMgr.h"
+#include "CommonPredicates.h"
 #include "GridNotifiers.h"
 #include "Item.h"
 #include "ObjectAccessor.h"
@@ -146,7 +147,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScript
         if (targets.size() < 2)
             return;
 
-        targets.sort(Trinity::HealthPctOrderPred());
+        targets.sort(Trinity::Predicates::HealthPctOrderPred());
 
         WorldObject* target = targets.front();
         targets.clear();
