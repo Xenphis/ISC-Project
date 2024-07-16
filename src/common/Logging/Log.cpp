@@ -85,13 +85,13 @@ void Log::CreateAppenderFromConfig(std::string const& appenderName)
     auto factoryFunction = appenderFactory.find(type);
     if (factoryFunction == appenderFactory.end())
     {
-        fprintf(stderr, "Log::CreateAppenderFromConfig: Unknown type '%s' for appender %s\n", std::string(tokens[0]).c_str(), name.c_str());
+        fprintf(stderr, "Log::CreateAppenderFromConfig: Unknown type '" STRING_VIEW_FMT "' for appender %s\n", STRING_VIEW_FMT_ARG(tokens[0]), name.c_str());
         return;
     }
 
     if (level > NUM_ENABLED_LOG_LEVELS)
     {
-        fprintf(stderr, "Log::CreateAppenderFromConfig: Wrong Log Level '%s' for appender %s\n", std::string(tokens[1]).c_str(), name.c_str());
+        fprintf(stderr, "Log::CreateAppenderFromConfig: Wrong Log Level '" STRING_VIEW_FMT "' for appender %s\n", STRING_VIEW_FMT_ARG(tokens[1]), name.c_str());
         return;
     }
 
@@ -101,14 +101,14 @@ void Log::CreateAppenderFromConfig(std::string const& appenderName)
             flags = AppenderFlags(*flagsVal);
         else
         {
-            fprintf(stderr, "Log::CreateAppenderFromConfig: Unknown flags '%s' for appender %s\n", std::string(tokens[2]).c_str(), name.c_str());
+            fprintf(stderr, "Log::CreateAppenderFromConfig: Unknown flags '" STRING_VIEW_FMT "' for appender %s\n", STRING_VIEW_FMT_ARG(tokens[2]), name.c_str());
             return;
         }
     }
 
     try
     {
-        Appender* appender = factoryFunction->second(NextAppenderId(), name, level, flags, tokens);
+        Appender* appender = factoryFunction->second(NextAppenderId(), std::move(name), level, flags, tokens);
         appenders[appender->getId()].reset(appender);
     }
     catch (InvalidAppenderArgsException const& iaae)
@@ -150,7 +150,7 @@ void Log::CreateLoggerFromConfig(std::string const& appenderName)
     level = LogLevel(Trinity::StringTo<uint8>(tokens[0]).value_or(LOG_LEVEL_INVALID));
     if (level > NUM_ENABLED_LOG_LEVELS)
     {
-        fprintf(stderr, "Log::CreateLoggerFromConfig: Wrong Log Level '%s' for logger %s\n", std::string(tokens[0]).c_str(), name.c_str());
+        fprintf(stderr, "Log::CreateLoggerFromConfig: Wrong Log Level '" STRING_VIEW_FMT "' for logger %s\n", STRING_VIEW_FMT_ARG(tokens[0]), name.c_str());
         return;
     }
 
@@ -165,11 +165,11 @@ void Log::CreateLoggerFromConfig(std::string const& appenderName)
     {
         if (Appender* appender = GetAppenderByName(appenderName))
         {
-            logger->addAppender(appender->getId(), appender);
+            logger->addAppender(appender);
             //fprintf(stdout, "Log::CreateLoggerFromConfig: Added Appender %s to Logger %s\n", appender->getName().c_str(), name.c_str());
         }
         else
-            fprintf(stderr, "Error while configuring Appender %s in Logger %s. Appender does not exist\n", std::string(appenderName).c_str(), name.c_str());
+            fprintf(stderr, "Error while configuring Appender " STRING_VIEW_FMT " in Logger %s. Appender does not exist\n", STRING_VIEW_FMT_ARG(appenderName), name.c_str());
     }
 }
 
@@ -198,11 +198,11 @@ void Log::ReadLoggersFromConfig()
         appenders[appender->getId()].reset(appender);
 
         Logger* rootLogger = new Logger(LOGGER_ROOT, LOG_LEVEL_ERROR);
-        rootLogger->addAppender(appender->getId(), appender);
+        rootLogger->addAppender(appender);
         loggers[rootLogger->getName()].reset(rootLogger);
 
         Logger* serverLogger = new Logger("server", LOG_LEVEL_INFO);
-        serverLogger->addAppender(appender->getId(), appender);
+        serverLogger->addAppender(appender);
         loggers[serverLogger->getName()].reset(serverLogger);
     }
 }
