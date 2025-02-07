@@ -26,7 +26,7 @@
 
 static BossBoundaryData const boundaries =
 {
-    { DATA_MAGTHERIDON, new CircleBoundary(Position(-18.70f, 2.24f), 52.30) }
+    { DATA_MAGTHERIDON, new CircleBoundary(Position(-18.70f, 2.24f), 52.30f) }
 };
 
 static constexpr DoorData doorData[] =

@@ -33,7 +33,7 @@ EndScriptData */
 
 BossBoundaryData const boundaries =
 {
-    { DATA_ONYXIA, new CircleBoundary(Position(-34.3697f, -212.3296f), 100.0) }
+    { DATA_ONYXIA, new CircleBoundary(Position(-34.3697f, -212.3296f), 100.0f) }
 };
 
 class instance_onyxias_lair : public InstanceMapScript
