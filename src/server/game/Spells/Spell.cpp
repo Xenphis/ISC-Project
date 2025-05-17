@@ -636,7 +636,7 @@ m_caster((info->HasAttribute(SPELL_ATTR6_CAST_BY_CHARMER) && caster->GetCharmerO
     m_powerCost = 0;                                        // setup to correct value in Spell::prepare, must not be used before.
     m_casttime = 0;                                         // setup to correct value in Spell::prepare, must not be used before.
     m_timer = 0;                                            // will set to castime in prepare
-    m_channeledDuration = 0;                                // will be setup in Spell::handle_immediate
+    m_channelDuration = 0;                                // will be setup in Spell::handle_immediate
     m_immediateHandled = false;
 
     m_channelTargetEffectMask = 0;
@@ -3664,7 +3664,7 @@ void Spell::handle_immediate()
             // Apply haste mods
             m_caster->ModSpellDurationTime(m_spellInfo, duration, this);
 
-            m_channeledDuration = duration;
+            m_channelDuration = duration;
             SendChannelStart(duration);
         }
         else if (duration == -1)
@@ -7271,7 +7271,7 @@ void Spell::DelayedChannel()
 
     //check pushback reduce
     // should be affected by modifiers, not take the dbc duration.
-    int32 duration = ((m_channeledDuration > 0) ? m_channeledDuration : m_spellInfo->GetDuration());
+    int32 duration = ((m_channelDuration > 0) ? m_channelDuration : m_spellInfo->GetDuration());
 
     int32 delaytime = CalculatePct(duration, 25); // channeling delay is normally 25% of its time per hit
 
