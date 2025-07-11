@@ -2574,7 +2574,7 @@ Group::Rolls::iterator Group::GetRoll(ObjectGuid Guid)
 
 void Group::LinkMember(GroupReference* pRef)
 {
-    m_memberMgr.insertFirst(pRef);
+    m_memberMgr.push_front(pRef);
 }
 
 void Group::DelinkMember(ObjectGuid guid)
