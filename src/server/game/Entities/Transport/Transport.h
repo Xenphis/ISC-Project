@@ -26,7 +26,7 @@ struct CreatureData;
 
 class TC_GAME_API Transport : public GameObject, public TransportBase
 {
-        friend Transport* TransportMgr::CreateTransport(uint32, ObjectGuid::LowType, Map*);
+        friend Transport* TransportMgr::CreateTransport(uint32, ObjectGuid::LowType, Map*, uint32);
 
         Transport();
     public:
