@@ -23,15 +23,14 @@ CHANGEME Tell us what should happen instead.
 
 **Branch(es):**
 
-Writing server debug on console will return the best results for reporting bugs (3.3.5a for now)
-CHANGEME 3.3.5, master or both
+Writing server debug on console will return the best results for reporting bugs
 
-**TC rev. hash/commit:** 
+**ISC rev. hash/commit:** 
 
 CHANGEME Copy the first line of the `worldserver`, `authserver` or `bnetserver` startup.
-For example: TrinityCore rev. 0000000000 2000-01-09 11:31:41 +0100 (my branch) (Win64, RelWithDebInfo, Static) (bnetserver)
+For example: ISC rev. 0000000000 2000-01-09 11:31:41 +0100 (my branch) (Win64, RelWithDebInfo, Static) (bnetserver)
 
-**TDB version:**  CHANGEME Version of the TrinityCore database
+**TDB version:**  CHANGEME Version of the ISC database
 
 **Operating system:** CHANGEME OS
 
