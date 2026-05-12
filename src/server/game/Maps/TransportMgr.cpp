@@ -16,6 +16,7 @@
  */
 
 #include "TransportMgr.h"
+#include "Containers.h"
 #include "DatabaseEnv.h"
 #include "InstanceScript.h"
 #include "Log.h"
@@ -26,13 +27,16 @@
 #include "Spline.h"
 #include "Transport.h"
 
-TransportTemplate::~TransportTemplate()
+bool KeyFrame::IsStopFrame() const
 {
+    return Node->Flags == 2;
 }
 
-TransportMgr::TransportMgr() { }
+TransportTemplate::~TransportTemplate() = default;
 
-TransportMgr::~TransportMgr() { }
+TransportMgr::TransportMgr() = default;
+
+TransportMgr::~TransportMgr() = default;
 
 TransportMgr* TransportMgr::instance()
 {
@@ -43,6 +47,7 @@ TransportMgr* TransportMgr::instance()
 void TransportMgr::Unload()
 {
     _transportTemplates.clear();
+    _transportSpawns.clear();
 }
 
 void TransportMgr::LoadTransportTemplates()
@@ -103,6 +108,46 @@ void TransportMgr::LoadTransportAnimationAndRotation()
     for (uint32 i = 0; i < sTransportRotationStore.GetNumRows(); ++i)
         if (TransportRotationEntry const* rot = sTransportRotationStore.LookupEntry(i))
             AddPathRotationToTransport(rot->GameObjectsID, rot->TimeIndex, rot);
+}
+
+void TransportMgr::LoadTransportSpawns()
+{
+    uint32 oldMSTime = getMSTime();
+
+    QueryResult result = WorldDatabase.Query("SELECT guid, entry, phaseMask FROM transports");
+
+    uint32 count = 0;
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            ObjectGuid::LowType guid = fields[0].GetUInt32();
+            uint32 entry = fields[1].GetUInt32();
+            uint32 phaseMask = fields[2].GetUInt32();
+
+            if (!sObjectMgr->GetGameObjectTemplate(entry))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `transports` have transport (GUID: {} Entry: {}) with unknown gameobject `entry` set, skipped.", guid, entry);
+                continue;
+            }
+
+            if (!phaseMask)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `transports` have transport (GUID: {} Entry: {}) with `phaseMask`=0, set to 1.", guid, entry);
+                phaseMask = PHASEMASK_NORMAL;
+            }
+
+            TransportSpawn& spawn = _transportSpawns[guid];
+            spawn.SpawnId = guid;
+            spawn.TransportGameObjectId = entry;
+            spawn.PhaseMask = phaseMask;
+
+            ++count;
+        } while (result->NextRow());
+    }
+
+    TC_LOG_INFO("server.loading", ">> Loaded {} transport spawns in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 class SplineRawInitializer
@@ -366,7 +411,7 @@ void TransportMgr::AddPathNodeToTransport(uint32 transportEntry, uint32 timeSeg,
     animNode.Path[timeSeg] = node;
 }
 
-Transport* TransportMgr::CreateTransport(uint32 entry, ObjectGuid::LowType guid /*= 0*/, Map* map /*= nullptr*/)
+Transport* TransportMgr::CreateTransport(uint32 entry, ObjectGuid::LowType guid /*= 0*/, Map* map /*= nullptr*/, uint32 phaseMask /*= 0*/)
 {
     // instance case, execute GetGameObjectEntry hook
     if (map)
@@ -407,6 +452,8 @@ Transport* TransportMgr::CreateTransport(uint32 entry, ObjectGuid::LowType guid 
         return nullptr;
     }
 
+    trans->SetPhaseMask(phaseMask ? phaseMask : uint32(PHASEMASK_NORMAL), false);
+
     if (MapEntry const* mapEntry = sMapStore.LookupEntry(mapId))
     {
         if (mapEntry->Instanceable() != tInfo->inInstance)
@@ -435,39 +482,42 @@ void TransportMgr::SpawnContinentTransports()
 
     uint32 oldMSTime = getMSTime();
 
-    QueryResult result = WorldDatabase.Query("SELECT guid, entry FROM transports");
-
     uint32 count = 0;
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-            ObjectGuid::LowType guid = fields[0].GetUInt32();
-            uint32 entry = fields[1].GetUInt32();
-
-            if (TransportTemplate const* tInfo = GetTransportTemplate(entry))
-                if (!tInfo->inInstance)
-                    if (CreateTransport(entry, guid))
-                        ++count;
-
-        } while (result->NextRow());
-    }
+    for (auto itr = _transportSpawns.begin(); itr != _transportSpawns.end(); ++itr)
+        if (TransportTemplate const* tInfo = GetTransportTemplate(itr->second.TransportGameObjectId))
+            if (!tInfo->inInstance)
+                if (CreateTransport(itr->second.TransportGameObjectId, itr->second.SpawnId, nullptr, itr->second.PhaseMask))
+                    ++count;
 
     TC_LOG_INFO("server.loading", ">> Spawned {} continent transports in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void TransportMgr::CreateInstanceTransports(Map* map)
 {
-    TransportInstanceMap::const_iterator mapTransports = _instanceTransports.find(map->GetId());
+    auto mapTransports = _instanceTransports.find(map->GetId());
 
     // no transports here
-    if (mapTransports == _instanceTransports.end() || mapTransports->second.empty())
+    if (mapTransports == _instanceTransports.end())
         return;
 
     // create transports
-    for (std::set<uint32>::const_iterator itr = mapTransports->second.begin(); itr != mapTransports->second.end(); ++itr)
-        CreateTransport(*itr, 0, map);
+    for (uint32 transportGameObjectId : mapTransports->second)
+        CreateTransport(transportGameObjectId, 0, map);
+}
+
+TransportTemplate const* TransportMgr::GetTransportTemplate(uint32 entry) const
+{
+    return Trinity::Containers::MapGetValuePtr(_transportTemplates, entry);
+}
+
+TransportAnimation const* TransportMgr::GetTransportAnimInfo(uint32 entry) const
+{
+    return Trinity::Containers::MapGetValuePtr(_transportAnimations, entry);
+}
+
+TransportSpawn const* TransportMgr::GetTransportSpawn(ObjectGuid::LowType spawnId) const
+{
+    return Trinity::Containers::MapGetValuePtr(_transportSpawns, spawnId);
 }
 
 TransportAnimationEntry const* TransportAnimation::GetAnimNode(uint32 time) const
