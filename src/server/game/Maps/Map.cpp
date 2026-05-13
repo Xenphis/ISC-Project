@@ -4672,6 +4672,9 @@ Corpse* Map::ConvertCorpseToBones(ObjectGuid const& ownerGuid, bool insignia /*=
 
         AddCorpse(bones);
 
+        bones->UpdatePositionData();
+        bones->SetZoneScript();
+        
         // add bones in grid store if grid loaded where corpse placed
         AddToMap(bones);
     }
