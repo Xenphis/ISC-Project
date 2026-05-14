@@ -26,6 +26,11 @@
 #include "Define.h"
 #include <memory>
 
+namespace G3D
+{
+class Quat;
+}
+
 namespace VMAP
 {
     class WorldModel;
@@ -46,7 +51,7 @@ public:
     virtual uint32 GetDisplayId() const = 0;
     virtual uint32 GetPhaseMask() const = 0;
     virtual G3D::Vector3 GetPosition() const = 0;
-    virtual float GetOrientation() const = 0;
+    virtual G3D::Quat GetRotation() const = 0;
     virtual float GetScale() const = 0;
     virtual void DebugVisualizeCorner(G3D::Vector3 const& /*corner*/) const = 0;
 };
