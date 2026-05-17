@@ -240,6 +240,7 @@ void WorldSession::HandleMoveWorldportAck()
 
     player->ResetMap();
     player->SetMap(newMap);
+    player->UpdatePositionData();
 
     player->SendInitialPacketsBeforeAddToMap();
     if (!player->GetMap()->AddPlayerToMap(player))
