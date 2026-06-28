@@ -1,0 +1,59 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run: authserver",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/bin/Debug/bin/authserver",
+      "args": [
+        "--config",
+        "${workspaceFolder}/build/bin/Debug/etc/authserver.conf"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/build/bin/Debug/bin"
+      },
+      "presentation": {
+        "label": "authserver",
+        "group": "servers",
+        "reveal": "always",
+        "panel": "dedicated",
+        "close": false
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: worldserver",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/bin/Debug/bin/worldserver",
+      "args": [
+        "--config",
+        "${workspaceFolder}/build/bin/Debug/etc/worldserver.conf"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/build/bin/Debug/bin"
+      },
+      "presentation": {
+        "label": "worldserver",
+        "group": "servers",
+        "reveal": "always",
+        "panel": "dedicated",
+        "close": false
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: authserver + worldserver",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Run: authserver",
+        "Run: worldserver"
+      ],
+      "presentation": {
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
