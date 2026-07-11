@@ -25,9 +25,7 @@
 #include "Player.h"
 #include "UpdateData.h"
 #include "UpdateMask.h"
-#include "ObjectAccessor.h"
 #include "DatabaseEnv.h"
-#include "World.h"
 
 Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type)
 {

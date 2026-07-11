@@ -49,7 +49,6 @@ Copied events should probably have a new owner
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "Opcodes.h"
 #include "Player.h"
 #include "SocialMgr.h"
 #include "World.h"

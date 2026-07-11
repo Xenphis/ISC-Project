@@ -21,12 +21,10 @@
 #include "GameTime.h"
 #include "Language.h"
 #include "Log.h"
-#include "ObjectMgr.h"
 #include "Opcodes.h"
 #include "Player.h"
 #include "Random.h"
 #include "TicketMgr.h"
-#include "Util.h"
 #include "World.h"
 #include "WorldPacket.h"
 #include <zlib.h>

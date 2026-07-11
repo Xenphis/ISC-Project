@@ -35,7 +35,6 @@
 #include <string>
 #include <map>
 #include <memory>
-#include <unordered_map>
 
 class Creature;
 class GameClient;

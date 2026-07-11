@@ -41,7 +41,6 @@
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
-#include "PoolMgr.h"
 #include "QueryPackets.h"
 #include "Random.h"
 #include "ReputationMgr.h"

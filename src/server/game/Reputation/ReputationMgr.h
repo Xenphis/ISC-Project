@@ -20,7 +20,6 @@
 
 #include "Common.h"
 #include "EnumFlag.h"
-#include "Language.h"
 #include "DatabaseEnvFwd.h"
 #include "DBCStructure.h"
 #include "SharedDefines.h"

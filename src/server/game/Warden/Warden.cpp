@@ -15,18 +15,18 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Common.h"
-#include "WorldPacket.h"
-#include "WorldSession.h"
-#include "Log.h"
-#include "Opcodes.h"
-#include "ByteBuffer.h"
-#include "CryptoHash.h"
-#include "GameTime.h"
-#include "World.h"
-#include "Util.h"
 #include "Warden.h"
 #include "AccountMgr.h"
+#include "ByteBuffer.h"
+#include "Common.h"
+#include "CryptoHash.h"
+#include "GameTime.h"
+#include "Log.h"
+#include "SmartEnum.h"
+#include "Util.h"
+#include "World.h"
+#include "WorldPacket.h"
+#include "WorldSession.h"
 #include <charconv>
 
 Warden::Warden() : _session(nullptr), _checkTimer(10 * IN_MILLISECONDS), _clientResponseTimer(0),

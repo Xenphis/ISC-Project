@@ -20,13 +20,14 @@
 
 #include "Common.h"
 #include "DatabaseEnvFwd.h"
-#include "DBCEnums.h"
+#include "EnumFlag.h"
 #include "SharedDefines.h"
 #include "UniqueTrackablePtr.h"
 #include "WorldPacket.h"
 #include <vector>
 
 class Player;
+enum Difficulty : uint8;
 
 namespace WorldPackets::Quest
 {

@@ -31,7 +31,6 @@
 #include "PlayerTaxi.h"
 #include "QuestDef.h"
 #include <memory>
-#include <queue>
 #include <unordered_set>
 
 struct AccessRequirement;

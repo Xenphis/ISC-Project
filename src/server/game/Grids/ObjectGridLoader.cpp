@@ -27,8 +27,6 @@
 #include "GameTime.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "World.h"
-#include "ScriptMgr.h"
 
 void ObjectGridEvacuator::Visit(CreatureMapType &m)
 {

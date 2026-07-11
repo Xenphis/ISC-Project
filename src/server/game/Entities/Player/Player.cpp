@@ -107,8 +107,6 @@
 #include "UpdateFieldFlags.h"
 #include "UpdateMask.h"
 #include "Util.h"
-#include "Weather.h"
-#include "WeatherMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"

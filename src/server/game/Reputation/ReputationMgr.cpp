@@ -18,6 +18,7 @@
 #include "ReputationMgr.h"
 #include "DBCStores.h"
 #include "DatabaseEnv.h"
+#include "Language.h"
 #include "Log.h"
 #include "MapUtils.h"
 #include "ObjectMgr.h"

@@ -38,7 +38,6 @@
 #include "ReputationMgr.h"
 #include "ScriptMgr.h"
 #include "SpellInfo.h"
-#include "SpellMgr.h"
 #include "Trainer.h"
 #include "World.h"
 #include "WorldPacket.h"

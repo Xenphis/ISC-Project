@@ -19,7 +19,6 @@
 #define TRINITY_UNITAI_H
 
 #include "Errors.h"
-#include "EventMap.h"
 #include "ObjectGuid.h"
 #include "SharedDefines.h"
 #include "SpellDefines.h"

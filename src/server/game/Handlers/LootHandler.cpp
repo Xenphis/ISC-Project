@@ -30,7 +30,6 @@
 #include "Object.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
-#include "WorldPacket.h"
 
 void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& packet)
 {

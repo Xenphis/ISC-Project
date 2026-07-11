@@ -18,7 +18,6 @@
 #ifndef TRINITYCORE_WORLD_SOCKET_H
 #define TRINITYCORE_WORLD_SOCKET_H
 
-#include "Common.h"
 #include "ServerPktHeader.h"
 #include "Socket.h"
 #include "Util.h"

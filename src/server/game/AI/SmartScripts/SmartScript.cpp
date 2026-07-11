@@ -37,7 +37,6 @@
 #include "Random.h"
 #include "SmartAI.h"
 #include "SpellAuras.h"
-#include "SpellMgr.h"
 #include "TemporarySummon.h"
 #include "Vehicle.h"
 #include "WaypointDefines.h"

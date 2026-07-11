@@ -29,6 +29,7 @@
 #include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "GroupMgr.h"
+#include "Language.h"
 #include "MiscPackets.h"
 #include "Object.h"
 #include "ObjectAccessor.h"

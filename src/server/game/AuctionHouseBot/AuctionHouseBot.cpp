@@ -26,6 +26,7 @@
 #include "GameTime.h"
 #include "Item.h"
 #include "Log.h"
+#include "SmartEnum.h"
 #include "World.h"
 
 AuctionBotConfig* AuctionBotConfig::instance()

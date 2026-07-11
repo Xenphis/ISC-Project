@@ -20,9 +20,8 @@
 
 #include "Define.h"
 #include "ConditionMgr.h"
-#include "ObjectGuid.h"
-#include "SharedDefines.h"
 #include <list>
+#include <set>
 #include <vector>
 
 class LootStore;

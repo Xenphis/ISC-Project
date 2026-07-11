@@ -19,11 +19,11 @@
 #include "AccountMgr.h"
 #include "CellImpl.h"
 #include "Common.h"
+#include "CreatureAI.h"
 #include "Channel.h"
 #include "ChannelMgr.h"
 #include "Chat.h"
 #include "ChatPackets.h"
-#include "DatabaseEnv.h"
 #include "DBCStores.h"
 #include "GameTime.h"
 #include "GridNotifiersImpl.h"
@@ -41,7 +41,6 @@
 #include "Util.h"
 #include "Warden.h"
 #include "World.h"
-#include "WorldPacket.h"
 #include <algorithm>
 
 inline bool isNasty(uint8 c)

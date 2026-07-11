@@ -26,10 +26,8 @@
 #include "MotionMaster.h"
 #include "ObjectMgr.h"
 #include "Pet.h"
-#include "ScriptMgr.h"
 #include "Transport.h"
 #include "WaypointManager.h"
-#include "World.h"
 
 /// Put scripts in the execution queue
 void Map::ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo>> const& scripts, uint32 id, Object* source, Object* target)

@@ -15,13 +15,12 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ObjectDefines.h"
+#include "LFGQueue.h"
 #include "Containers.h"
 #include "DBCStructure.h"
 #include "DBCStores.h"
 #include "GameTime.h"
 #include "Group.h"
-#include "LFGQueue.h"
 #include "LFGMgr.h"
 #include "Log.h"
 

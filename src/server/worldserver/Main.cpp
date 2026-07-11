@@ -44,12 +44,12 @@
 #include "ScriptMgr.h"
 #include "ScriptReloadMgr.h"
 #include "SecretMgr.h"
-#include "SharedDefines.h"
 #include "TCSoap.h"
 #include "ThreadPool.h"
 #include "World.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
+#include "Util.h"
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 #include <boost/asio/signal_set.hpp>
