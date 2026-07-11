@@ -16,7 +16,6 @@
  */
 
 #include "Hyperlinks.h"
-#include "advstd.h"
 #include "Common.h"
 #include "DBCStores.h"
 #include "Errors.h"

@@ -22,6 +22,7 @@
 #include "Creature.h"  // convenience include for scripts, all uses of ScriptedCreature also need Creature (except ScriptedCreature itself doesn't need Creature)
 #include "CreatureAI.h"
 #include "DBCEnums.h"
+#include "EventMap.h"
 #include "TaskScheduler.h"
 
 class InstanceScript;

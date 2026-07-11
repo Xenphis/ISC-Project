@@ -30,10 +30,8 @@
 #include "Player.h"
 #include "SocialMgr.h"
 #include "SpellAuras.h"
-#include "Util.h"
 #include "Vehicle.h"
 #include "World.h"
-#include "WorldPacket.h"
 
 class Aura;
 

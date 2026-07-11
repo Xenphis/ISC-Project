@@ -16,7 +16,6 @@
  */
 
 #include "Battleground.h"
-#include "Common.h"
 #include "Corpse.h"
 #include "GameTime.h"
 #include "GameClient.h"
@@ -31,7 +30,6 @@
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "Opcodes.h"
 #include "Player.h"
 #include "Transport.h"
 #include "Vehicle.h"

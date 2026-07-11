@@ -20,9 +20,7 @@
 #include "DBCStores.h"
 #include "Log.h"
 #include "NPCPackets.h"
-#include "Opcodes.h"
 #include "Player.h"
-#include "WorldPacket.h"
 #include "WorldSession.h"
 
 bool WorldSession::CanUseBank(ObjectGuid bankerGUID) const

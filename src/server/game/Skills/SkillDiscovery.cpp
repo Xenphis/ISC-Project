@@ -22,7 +22,6 @@
 #include "Random.h"
 #include "SpellMgr.h"
 #include "SpellInfo.h"
-#include "Util.h"
 #include "World.h"
 #include <map>
 

@@ -24,7 +24,6 @@
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "Opcodes.h"
 #include "Pet.h"
 #include "PetAI.h"
 #include "PetPackets.h"
@@ -35,8 +34,6 @@
 #include "SpellMgr.h"
 #include "SpellPackets.h"
 #include "Util.h"
-#include "World.h"
-#include "WorldPacket.h"
 
 void WorldSession::HandleDismissCritter(WorldPackets::Pet::DismissCritter& packet)
 {

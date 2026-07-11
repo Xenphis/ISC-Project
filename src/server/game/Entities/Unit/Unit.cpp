@@ -63,7 +63,6 @@
 #include "Player.h"
 #include "PlayerAI.h"
 #include "QuestDef.h"
-#include "ReputationMgr.h"
 #include "ScheduledChangeAI.h"
 #include "SpellAuraEffects.h"
 #include "SpellAuras.h"

@@ -18,7 +18,6 @@
 #ifndef __TRINITY_VEHICLE_H
 #define __TRINITY_VEHICLE_H
 
-#include "ObjectDefines.h"
 #include "Object.h"
 #include "UniqueTrackablePtr.h"
 #include "Unit.h"

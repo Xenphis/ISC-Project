@@ -28,10 +28,8 @@
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "Opcodes.h"
 #include "Player.h"
 #include "PetitionMgr.h"
-#include "WorldPacket.h"
 #include "World.h"
 
 #define CHARTER_DISPLAY_ID 16161

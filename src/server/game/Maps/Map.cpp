@@ -43,6 +43,7 @@
 #include "PoolMgr.h"
 #include "Util.h"
 #include "ScriptMgr.h"
+#include "SpellAuras.h"
 #include "Transport.h"
 #include "Vehicle.h"
 #include "VMapFactory.h"

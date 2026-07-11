@@ -37,6 +37,7 @@
 #include "UniqueTrackablePtr.h"
 #include <bitset>
 #include <list>
+#include <map>
 #include <memory>
 #include <mutex>
 

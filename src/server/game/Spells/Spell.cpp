@@ -22,6 +22,7 @@
 #include "CellImpl.h"
 #include "Common.h"
 #include "ConditionMgr.h"
+#include "CreatureAI.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
 #include "DBCStores.h"

@@ -27,7 +27,6 @@
 #include "InstanceSaveMgr.h"
 #include "LFGGroupData.h"
 #include "LFGPlayerData.h"
-#include "LFGScripts.h"
 #include "LFGQueue.h"
 #include "Log.h"
 #include "Map.h"
