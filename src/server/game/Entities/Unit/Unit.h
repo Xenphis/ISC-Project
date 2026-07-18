@@ -67,6 +67,7 @@ struct LiquidData;
 struct LiquidTypeEntry;
 struct SpellValue;
 
+class AreaTrigger;
 class Aura;
 class AuraApplication;
 class AuraEffect;
@@ -1611,6 +1612,14 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveDynObject(uint32 spellId);
         void RemoveAllDynObjects();
 
+        // AreaTrigger (server-side entity) management
+        void _RegisterAreaTrigger(AreaTrigger* areaTrigger);
+        void _UnregisterAreaTrigger(AreaTrigger* areaTrigger);
+        AreaTrigger* GetAreaTrigger(uint32 spellId) const;
+        std::vector<AreaTrigger*> GetAreaTriggers(uint32 spellId) const;
+        void RemoveAreaTrigger(uint32 spellId);
+        void RemoveAllAreaTriggers();
+
         GameObject* GetGameObject(uint32 spellId) const;
         std::vector<GameObject*> GetGameObjects(uint32 spellId) const;
         void AddGameObject(GameObject* gameObj);
@@ -1871,6 +1880,9 @@ class TC_GAME_API Unit : public WorldObject
 
         typedef std::list<DynamicObject*> DynObjectList;
         DynObjectList m_dynObj;
+
+        typedef std::list<AreaTrigger*> AreaTriggerList;
+        AreaTriggerList m_areaTrigger;
 
         typedef std::list<GameObject*> GameObjectList;
         GameObjectList m_gameObj;

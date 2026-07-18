@@ -18,6 +18,7 @@
 #ifndef TRINITY_GRIDNOTIFIERS_H
 #define TRINITY_GRIDNOTIFIERS_H
 
+#include "AreaTrigger.h"
 #include "Creature.h"
 #include "Corpse.h"
 #include "CreatureAI.h"
@@ -35,6 +36,7 @@ namespace Trinity
     template<typename ObjectType>
     struct GridMapTypeMaskForType : std::integral_constant<GridMapTypeMask, GridMapTypeMask(0)> { };
 
+    template<> struct GridMapTypeMaskForType<AreaTrigger> : std::integral_constant<GridMapTypeMask, GRID_MAP_TYPE_MASK_AREATRIGGER> { };
     template<> struct GridMapTypeMaskForType<Corpse> : std::integral_constant<GridMapTypeMask, GRID_MAP_TYPE_MASK_CORPSE> { };
     template<> struct GridMapTypeMaskForType<Creature> : std::integral_constant<GridMapTypeMask, GRID_MAP_TYPE_MASK_CREATURE> { };
     template<> struct GridMapTypeMaskForType<DynamicObject> : std::integral_constant<GridMapTypeMask, GRID_MAP_TYPE_MASK_DYNAMICOBJECT> { };
@@ -121,6 +123,7 @@ namespace Trinity
         void Visit(GameObjectMapType &m) { updateObjects<GameObject>(m); }
         void Visit(DynamicObjectMapType &m) { updateObjects<DynamicObject>(m); }
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
+        void Visit(AreaTriggerMapType &m) { updateObjects<AreaTrigger>(m); }
     };
 
     struct TC_GAME_API MessageDistDeliverer

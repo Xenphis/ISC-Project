@@ -543,6 +543,8 @@ uint32 Object::GetUpdateFieldData(Player const* target, uint32*& flags) const
             break;
         case TYPEID_OBJECT:
             break;
+        case TYPEID_AREATRIGGER:
+            break;                                       // unreachable: AreaTrigger::IsNeverVisible() always returns true
     }
 
     return visibleFlag;

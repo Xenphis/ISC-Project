@@ -16,6 +16,7 @@
  */
 
 #include "ObjectGridLoader.h"
+#include "AreaTrigger.h"
 #include "CellImpl.h"
 #include "Corpse.h"
 #include "Creature.h"
@@ -201,6 +202,7 @@ void ObjectGridStoper::Visit(CreatureMapType &m)
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         iter->GetSource()->RemoveAllDynObjects();
+        iter->GetSource()->RemoveAllAreaTriggers();
         if (iter->GetSource()->IsInCombat())
             iter->GetSource()->CombatStop();
     }
@@ -216,8 +218,10 @@ void ObjectGridCleaner::Visit(GridRefManager<T> &m)
 template void ObjectGridUnloader::Visit(CreatureMapType &);
 template void ObjectGridUnloader::Visit(GameObjectMapType &);
 template void ObjectGridUnloader::Visit(DynamicObjectMapType &);
+template void ObjectGridUnloader::Visit(AreaTriggerMapType &);
 
 template void ObjectGridCleaner::Visit(CreatureMapType &);
 template void ObjectGridCleaner::Visit<GameObject>(GameObjectMapType &);
 template void ObjectGridCleaner::Visit<DynamicObject>(DynamicObjectMapType &);
 template void ObjectGridCleaner::Visit<Corpse>(CorpseMapType &);
+template void ObjectGridCleaner::Visit<AreaTrigger>(AreaTriggerMapType &);

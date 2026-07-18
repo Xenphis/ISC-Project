@@ -37,6 +37,7 @@
 #include <set>
 #include <unordered_map>
 
+class AreaTrigger;
 class Corpse;
 class Creature;
 class CreatureAI;
@@ -213,6 +214,12 @@ class TC_GAME_API Object
         static DynamicObject const* ToDynObject(Object const* o) { return o ? o->ToDynObject() : nullptr; }
         DynamicObject* ToDynObject() { if (IsDynObject()) return reinterpret_cast<DynamicObject*>(this); else return nullptr; }
         DynamicObject const* ToDynObject() const { if (IsDynObject()) return reinterpret_cast<DynamicObject const*>(this); else return nullptr; }
+
+        inline bool IsAreaTrigger() const { return GetTypeId() == TYPEID_AREATRIGGER; }
+        static AreaTrigger* ToAreaTrigger(Object* o) { return o ? o->ToAreaTrigger() : nullptr; }
+        static AreaTrigger const* ToAreaTrigger(Object const* o) { return o ? o->ToAreaTrigger() : nullptr; }
+        AreaTrigger* ToAreaTrigger() { if (IsAreaTrigger()) return reinterpret_cast<AreaTrigger*>(this); else return nullptr; }
+        AreaTrigger const* ToAreaTrigger() const { if (IsAreaTrigger()) return reinterpret_cast<AreaTrigger const*>(this); else return nullptr; }
 
         virtual std::string GetDebugInfo() const;
 

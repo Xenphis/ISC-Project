@@ -432,6 +432,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         }
         Transport* GetTransport(ObjectGuid const& guid);
         DynamicObject* GetDynamicObject(ObjectGuid const& guid);
+        AreaTrigger* GetAreaTrigger(ObjectGuid const& guid);
         Pet* GetPet(ObjectGuid const& guid);
 
         MapStoredObjectTypesContainer& GetObjectsStore() { return _objectsStore; }

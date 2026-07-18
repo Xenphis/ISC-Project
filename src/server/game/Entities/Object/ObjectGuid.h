@@ -39,7 +39,8 @@ enum TypeID
     TYPEID_PLAYER        = 4,
     TYPEID_GAMEOBJECT    = 5,
     TYPEID_DYNAMICOBJECT = 6,
-    TYPEID_CORPSE        = 7
+    TYPEID_CORPSE        = 7,
+    TYPEID_AREATRIGGER   = 8                                // server-only, never sent to 3.3.5 clients
 };
 
 #define NUM_CLIENT_OBJECT_TYPES             8
@@ -54,9 +55,10 @@ enum TypeMask
     TYPEMASK_GAMEOBJECT     = 0x0020,
     TYPEMASK_DYNAMICOBJECT  = 0x0040,
     TYPEMASK_CORPSE         = 0x0080,
+    TYPEMASK_AREATRIGGER    = 0x0100,                       // server-only, never sent to 3.3.5 clients
 
     TYPEMASK_SEER           = TYPEMASK_UNIT | TYPEMASK_PLAYER | TYPEMASK_DYNAMICOBJECT,
-    TYPEMASK_WORLDOBJECT    = TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT | TYPEMASK_CORPSE
+    TYPEMASK_WORLDOBJECT    = TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT | TYPEMASK_CORPSE | TYPEMASK_AREATRIGGER
 };
 
 enum class HighGuid
@@ -71,6 +73,7 @@ enum class HighGuid
     Vehicle        = 0xF150,                      // blizz F550
     DynamicObject  = 0xF100,                      // blizz F100
     Corpse         = 0xF101,                      // blizz F100
+    AreaTrigger    = 0xF102,                      // server-only, no blizz equivalent in 3.3.5
     Mo_Transport   = 0x1FC0,                      // blizz 1FC0 (for GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
     Instance       = 0x1F40,                      // blizz 1F40
     Group          = 0x1F50,
@@ -114,6 +117,7 @@ MAKE_GUID_TRAIT(HighGuid::Pet, ObjectGuidSequenceSource::Map, ObjectGuidFormatTy
 MAKE_GUID_TRAIT(HighGuid::Vehicle, ObjectGuidSequenceSource::Map, ObjectGuidFormatType::CounterAndEntry);
 MAKE_GUID_TRAIT(HighGuid::DynamicObject, ObjectGuidSequenceSource::Map, ObjectGuidFormatType::OnlyCounter);
 MAKE_GUID_TRAIT(HighGuid::Corpse, ObjectGuidSequenceSource::Map, ObjectGuidFormatType::OnlyCounter);
+MAKE_GUID_TRAIT(HighGuid::AreaTrigger, ObjectGuidSequenceSource::Map, ObjectGuidFormatType::OnlyCounter);
 MAKE_GUID_TRAIT(HighGuid::Mo_Transport, ObjectGuidSequenceSource::Global, ObjectGuidFormatType::OnlyCounter);
 MAKE_GUID_TRAIT(HighGuid::Instance, ObjectGuidSequenceSource::Global, ObjectGuidFormatType::OnlyCounter);
 MAKE_GUID_TRAIT(HighGuid::Group, ObjectGuidSequenceSource::Global, ObjectGuidFormatType::OnlyCounter);
@@ -181,6 +185,7 @@ class TC_GAME_API ObjectGuid
         bool IsItem()              const { return GetHigh() == HighGuid::Item; }
         bool IsGameObject()        const { return GetHigh() == HighGuid::GameObject; }
         bool IsDynamicObject()     const { return GetHigh() == HighGuid::DynamicObject; }
+        bool IsAreaTrigger()       const { return GetHigh() == HighGuid::AreaTrigger; }
         bool IsCorpse()            const { return GetHigh() == HighGuid::Corpse; }
         bool IsTransport()         const { return GetHigh() == HighGuid::Transport; }
         bool IsMOTransport()       const { return GetHigh() == HighGuid::Mo_Transport; }
@@ -199,6 +204,7 @@ class TC_GAME_API ObjectGuid
                 case HighGuid::Player:       return TYPEID_PLAYER;
                 case HighGuid::GameObject:   return TYPEID_GAMEOBJECT;
                 case HighGuid::DynamicObject: return TYPEID_DYNAMICOBJECT;
+                case HighGuid::AreaTrigger:  return TYPEID_AREATRIGGER;
                 case HighGuid::Corpse:       return TYPEID_CORPSE;
                 case HighGuid::Mo_Transport: return TYPEID_GAMEOBJECT;
                 case HighGuid::Vehicle:      return TYPEID_UNIT;
@@ -234,6 +240,7 @@ class TC_GAME_API ObjectGuid
                 case HighGuid::Item:
                 case HighGuid::Player:
                 case HighGuid::DynamicObject:
+                case HighGuid::AreaTrigger:
                 case HighGuid::Corpse:
                 case HighGuid::Mo_Transport:
                 case HighGuid::Instance:

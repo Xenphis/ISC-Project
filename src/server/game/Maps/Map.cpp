@@ -346,6 +346,15 @@ void Map::AddToGrid(DynamicObject* obj, Cell const& cell)
 }
 
 template<>
+void Map::AddToGrid(AreaTrigger* obj, Cell const& cell)
+{
+    NGridType* grid = getNGrid(cell.GridX(), cell.GridY());
+    grid->GetGridType(cell.CellX(), cell.CellY()).AddGridObject(obj);
+
+    obj->SetCurrentCell(cell);
+}
+
+template<>
 void Map::AddToGrid(Corpse* obj, Cell const& cell)
 {
     NGridType* grid = getNGrid(cell.GridX(), cell.GridY());
@@ -3625,6 +3634,9 @@ void Map::RemoveAllObjectsInRemoveList()
             case TYPEID_DYNAMICOBJECT:
                 RemoveFromMap(obj->ToDynObject(), true);
                 break;
+            case TYPEID_AREATRIGGER:
+                RemoveFromMap(obj->ToAreaTrigger(), true);
+                break;
             case TYPEID_GAMEOBJECT:
             {
                 GameObject* go = obj->ToGameObject();
@@ -3806,11 +3818,13 @@ template TC_GAME_API bool Map::AddToMap(Corpse*);
 template TC_GAME_API bool Map::AddToMap(Creature*);
 template TC_GAME_API bool Map::AddToMap(GameObject*);
 template TC_GAME_API bool Map::AddToMap(DynamicObject*);
+template TC_GAME_API bool Map::AddToMap(AreaTrigger*);
 
 template TC_GAME_API void Map::RemoveFromMap(Corpse*, bool);
 template TC_GAME_API void Map::RemoveFromMap(Creature*, bool);
 template TC_GAME_API void Map::RemoveFromMap(GameObject*, bool);
 template TC_GAME_API void Map::RemoveFromMap(DynamicObject*, bool);
+template TC_GAME_API void Map::RemoveFromMap(AreaTrigger*, bool);
 
 /* ******* Dungeon Instance Maps ******* */
 
@@ -4439,6 +4453,11 @@ Transport* Map::GetTransport(ObjectGuid const& guid)
 DynamicObject* Map::GetDynamicObject(ObjectGuid const& guid)
 {
     return _objectsStore.Find<DynamicObject>(guid);
+}
+
+AreaTrigger* Map::GetAreaTrigger(ObjectGuid const& guid)
+{
+    return _objectsStore.Find<AreaTrigger>(guid);
 }
 
 void Map::UpdateIteratorBack(Player* player)

@@ -98,6 +98,7 @@ std::string_view ObjectGuid::GetTypeName(HighGuid high)
         case HighGuid::Pet:          return "Pet";
         case HighGuid::Vehicle:      return "Vehicle";
         case HighGuid::DynamicObject: return "DynObject";
+        case HighGuid::AreaTrigger:  return "AreaTrigger";
         case HighGuid::Corpse:       return "Corpse";
         case HighGuid::Mo_Transport: return "MoTransport";
         case HighGuid::Instance:     return "InstanceID";
