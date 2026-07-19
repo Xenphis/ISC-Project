@@ -25,6 +25,7 @@
 #include "MapObject.h"
 #include "SharedDefines.h"
 
+class GameObject;
 class GameObjectAI;
 class GameObjectModel;
 class Group;
@@ -34,6 +35,21 @@ class Unit;
 struct TransportAnimation;
 enum SpellTargetCheckTypes : uint8;
 enum TriggerCastFlags : uint32;
+
+// Base class for GameObject type specific implementations
+class GameObjectTypeBase
+{
+public:
+    explicit GameObjectTypeBase(GameObject& owner) : _owner(owner) { }
+    virtual ~GameObjectTypeBase() = default;
+
+    virtual void Update([[maybe_unused]] uint32 diff) { }
+    virtual void OnStateChanged([[maybe_unused]] GOState oldState, [[maybe_unused]] GOState newState) { }
+    virtual void OnRelocated() { }
+
+protected:
+    GameObject& _owner;
+};
 
 union GameObjectValue
 {
@@ -299,6 +315,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         float GetStationaryY() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return m_stationaryPosition.GetPositionY(); return GetPositionY(); }
         float GetStationaryZ() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return m_stationaryPosition.GetPositionZ(); return GetPositionZ(); }
         float GetStationaryO() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return m_stationaryPosition.GetOrientation(); return GetOrientation(); }
+        Position const& GetStationaryPosition() const { return m_stationaryPosition; }
         void RelocateStationaryPosition(float x, float y, float z, float o) { m_stationaryPosition.Relocate(x, y, z, o); }
 
         float GetInteractionDistance() const;
@@ -347,7 +364,8 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         GameObjectTemplate const* m_goInfo;
         GameObjectTemplateAddon const* m_goTemplateAddon;
         GameObjectData const* m_goData;
-        GameObjectValue m_goValue;
+        std::unique_ptr<GameObjectTypeBase> m_goTypeImpl;
+        GameObjectValue m_goValue; // TODO: replace with m_goTypeImpl
         std::array<std::string const*, 3> m_stringIds;
         Optional<std::string> m_scriptStringId;
 

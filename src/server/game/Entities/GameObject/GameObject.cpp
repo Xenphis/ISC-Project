@@ -496,6 +496,9 @@ void GameObject::Update(uint32 diff)
         }
     }
 
+    if (m_goTypeImpl)
+        m_goTypeImpl->Update(diff);
+
     switch (m_lootState)
     {
         case GO_NOT_READY:
@@ -2599,9 +2602,14 @@ void GameObject::SetLootGenerationTime()
 
 void GameObject::SetGoState(GOState state)
 {
+    GOState oldState = GetGoState();
     SetByteValue(GAMEOBJECT_BYTES_1, 0, state);
     if (AI())
         AI()->OnStateChanged(state);
+
+    if (m_goTypeImpl)
+        m_goTypeImpl->OnStateChanged(oldState, state);
+
     if (m_model && !IsTransport())
     {
         if (!IsInWorld())
