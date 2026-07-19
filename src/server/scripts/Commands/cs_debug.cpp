@@ -1352,7 +1352,7 @@ public:
 
     static bool HandleDebugTransportCommand(ChatHandler* handler, std::string operation)
     {
-        Transport* transport = handler->GetPlayer()->GetTransport();
+        Transport* transport = dynamic_cast<Transport*>(handler->GetPlayer()->GetTransport());
         if (!transport)
             return false;
 

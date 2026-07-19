@@ -320,10 +320,10 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         if (flags & UPDATEFLAG_POSITION)
         {
             ASSERT(object);
-            Transport* transport = object->GetTransport();
+            TransportBase* transport = object->GetTransport();
 
             if (transport)
-                *data << transport->GetPackGUID();
+                *data << transport->GetTransportGUID().WriteAsPacked();
             else
                 *data << uint8(0);
 
@@ -421,7 +421,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             resulting in players seeing the object in a different position
         */
         if (go && go->ToTransport())
-            *data << uint32(go->GetGOValue()->Transport.PathProgress);
+            *data << uint32(go->ToTransport()->GetTimer());
         else
             *data << uint32(GameTime::GetGameTimeMS());
     }
@@ -1035,7 +1035,7 @@ void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
     if (IsInWorld())
         RemoveFromWorld();
 
-    if (Transport* transport = GetTransport())
+    if (TransportBase* transport = GetTransport())
         transport->RemovePassenger(this);
 
     m_Events.KillAllEvents(false);                      // non-delatable (currently cast spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
@@ -1110,7 +1110,7 @@ bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool
     Position const* thisOrTransport = this;
     Position const* objOrObjTransport = obj;
 
-    if (GetTransport() && obj->GetTransport() && obj->GetTransport()->GetGUID() == GetTransport()->GetGUID())
+    if (GetTransport() && obj->GetTransport() && obj->GetTransport()->GetTransportGUID() == GetTransport()->GetTransportGUID())
     {
         thisOrTransport = &m_movementInfo.transport.pos;
         objOrObjTransport = &obj->m_movementInfo.transport.pos;
@@ -3579,7 +3579,7 @@ void WorldObject::RemoveFromObjectUpdate()
 ObjectGuid WorldObject::GetTransGUID() const
 {
     if (GetTransport())
-        return GetTransport()->GetGUID();
+        return GetTransport()->GetTransportGUID();
     return ObjectGuid::Empty;
 }
 

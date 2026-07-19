@@ -1568,7 +1568,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         TC_LOG_DEBUG("maps", "Player '{}' ({}) using client without required expansion tried teleport to non accessible map (MapID: {})",
             GetName(), GetGUID().ToString(), mapid);
 
-        if (Transport* transport = GetTransport())
+        if (TransportBase* transport = GetTransport())
         {
             transport->RemovePassenger(this);
             RepopAtGraveyard();                             // teleport to near graveyard if on transport, looks blizz like :)
@@ -1589,7 +1589,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     DisableSpline();
     GetMotionMaster()->InterruptOnTeleport();
 
-    if (Transport* transport = GetTransport())
+    if (TransportBase* transport = GetTransport())
     {
         if (options & TELE_TO_NOT_LEAVE_TRANSPORT)
             AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
@@ -1732,7 +1732,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 // send transfer packets
                 WorldPackets::Movement::TransferPending transferPending;
                 transferPending.MapID = mapid;
-                if (Transport* transport = GetTransport())
+                if (Transport* transport = dynamic_cast<Transport*>(GetTransport()))
                 {
                     WorldPackets::Movement::ShipTransferPending& shipTransferPending = transferPending.Ship.emplace();
                     shipTransferPending.ID = transport->GetEntry();
@@ -19064,8 +19064,8 @@ void Player::SaveToDB(CharacterDatabaseTransaction trans, bool create /* = false
         stmt->setFloat(index++, finiteAlways(GetTransOffsetZ()));
         stmt->setFloat(index++, finiteAlways(GetTransOffsetO()));
         ObjectGuid::LowType transLowGUID = 0;
-        if (GetTransport())
-            transLowGUID = GetTransport()->GetGUID().GetCounter();
+        if (Transport* transport = dynamic_cast<Transport*>(GetTransport()))
+            transLowGUID = transport->GetGUID().GetCounter();
         stmt->setUInt32(index++, transLowGUID);
 
         std::ostringstream ss;
@@ -19189,8 +19189,8 @@ void Player::SaveToDB(CharacterDatabaseTransaction trans, bool create /* = false
         stmt->setFloat(index++, finiteAlways(GetTransOffsetZ()));
         stmt->setFloat(index++, finiteAlways(GetTransOffsetO()));
         ObjectGuid::LowType transLowGUID = 0;
-        if (GetTransport())
-            transLowGUID = GetTransport()->GetGUID().GetCounter();
+        if (Transport* transport = dynamic_cast<Transport*>(GetTransport()))
+            transLowGUID = transport->GetGUID().GetCounter();
         stmt->setUInt32(index++, transLowGUID);
 
         std::ostringstream ss;

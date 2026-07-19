@@ -1050,7 +1050,12 @@ void GameObject::SaveToDB()
         return;
     }
 
-    SaveToDB(GetMapId(), data->spawnMask, data->phaseMask);
+    uint32 mapId = GetMapId();
+    if (TransportBase* transport = GetTransport())
+        if (transport->GetMapIdForSpawning() >= 0)
+            mapId = transport->GetMapIdForSpawning();
+
+    SaveToDB(mapId, data->spawnMask, data->phaseMask);
 }
 
 void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
@@ -2407,7 +2412,7 @@ void GameObject::SetLocalRotationAngles(float z_rot, float y_rot, float x_rot)
 QuaternionData GameObject::GetWorldRotation() const
 {
     QuaternionData localRotation = GetLocalRotation();
-    if (Transport* transport = GetTransport())
+    if (Transport* transport = dynamic_cast<Transport*>(GetTransport()))
     {
         QuaternionData worldRotation = transport->GetWorldRotation();
 
@@ -2780,11 +2785,19 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player co
                             dynFlags |= GO_DYNFLAG_LO_SPARKLE;
                         break;
                     case GAMEOBJECT_TYPE_TRANSPORT:
-                    case GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT:
                     {
                         if (uint32 transportPeriod = GetTransportPeriod())
                         {
                             float timer = float(m_goValue.Transport.PathProgress % transportPeriod);
+                            pathProgress = int16(timer / float(transportPeriod) * 65535.0f);
+                        }
+                        break;
+                    }
+                    case GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT:
+                    {
+                        if (uint32 transportPeriod = GetTransportPeriod())
+                        {
+                            float timer = float(ToTransport()->GetTimer() % transportPeriod);
                             pathProgress = int16(timer / float(transportPeriod) * 65535.0f);
                         }
                         break;
@@ -2830,6 +2843,32 @@ void GameObject::GetRespawnPosition(float &x, float &y, float &z, float* ori /* 
         else
             GetPosition(x, y, z);
     }
+}
+
+TransportBase const* GameObject::ToTransportBase() const
+{
+    switch (GetGoType())
+    {
+        case GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT:
+            return static_cast<Transport const*>(this);
+        case GAMEOBJECT_TYPE_TRANSPORT:
+            // GameObjectType::Transport (m_goTypeImpl) not implemented yet for type 11
+            break;
+        default:
+            break;
+    }
+
+    return nullptr;
+}
+
+void GameObject::AfterRelocation()
+{
+    UpdateModelPosition();
+    UpdatePositionData();
+    if (m_goTypeImpl)
+        m_goTypeImpl->OnRelocated();
+
+    UpdateObjectVisibility(false);
 }
 
 float GameObject::GetInteractionDistance() const

@@ -273,7 +273,7 @@ void WorldSession::HandleQueryCorpseTransport(WorldPackets::Query::QueryCorpseTr
     WorldPackets::Query::CorpseTransportQuery response;
     if (Corpse const* corpse = _player->GetCorpse())
     {
-        if (Transport const* transport = corpse->GetTransport())
+        if (Transport const* transport = dynamic_cast<Transport const*>(corpse->GetTransport()))
         {
             if (transport->GetGUID().GetCounter() == queryCorpseTransport.Transport)
             {

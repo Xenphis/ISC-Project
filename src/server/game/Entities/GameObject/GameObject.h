@@ -31,6 +31,7 @@ class GameObjectModel;
 class Group;
 class OPvPCapturePoint;
 class Transport;
+class TransportBase;
 class Unit;
 struct TransportAnimation;
 enum SpellTargetCheckTypes : uint8;
@@ -311,12 +312,17 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         Transport* ToTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return reinterpret_cast<Transport*>(this); else return nullptr; }
         Transport const* ToTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return reinterpret_cast<Transport const*>(this); else return nullptr; }
 
+        TransportBase* ToTransportBase() { return const_cast<TransportBase*>(const_cast<GameObject const*>(this)->ToTransportBase()); }
+        TransportBase const* ToTransportBase() const;
+
         float GetStationaryX() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return m_stationaryPosition.GetPositionX(); return GetPositionX(); }
         float GetStationaryY() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return m_stationaryPosition.GetPositionY(); return GetPositionY(); }
         float GetStationaryZ() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return m_stationaryPosition.GetPositionZ(); return GetPositionZ(); }
         float GetStationaryO() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) return m_stationaryPosition.GetOrientation(); return GetOrientation(); }
         Position const& GetStationaryPosition() const { return m_stationaryPosition; }
         void RelocateStationaryPosition(float x, float y, float z, float o) { m_stationaryPosition.Relocate(x, y, z, o); }
+
+        void AfterRelocation();
 
         float GetInteractionDistance() const;
 

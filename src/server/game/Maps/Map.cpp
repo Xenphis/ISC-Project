@@ -1164,9 +1164,7 @@ void Map::GameObjectRelocation(GameObject* go, float x, float y, float z, float 
     else
     {
         go->Relocate(x, y, z, orientation);
-        go->UpdateModelPosition();
-        go->UpdatePositionData();
-        go->UpdateObjectVisibility(false);
+        go->AfterRelocation();
         RemoveGameObjectFromMoveList(go);
     }
 
@@ -1346,9 +1344,7 @@ void Map::MoveAllGameObjectsInMoveList()
         {
             // update pos
             go->Relocate(go->_newPosition);
-            go->UpdateModelPosition();
-            go->UpdatePositionData();
-            go->UpdateObjectVisibility(false);
+            go->AfterRelocation();
         }
         else
         {
@@ -2938,7 +2934,7 @@ void Map::SendInitSelf(Player* player)
     UpdateData data;
 
     // attach to player data current transport data
-    if (Transport* transport = player->GetTransport())
+    if (Transport* transport = dynamic_cast<Transport*>(player->GetTransport()))
     {
         transport->BuildCreateUpdateBlockForPlayer(&data, player);
     }
@@ -2958,7 +2954,7 @@ void Map::SendInitSelf(Player* player)
     data.Clear();
 
     // build other passengers at transport also (they always visible and marked as visible and will not send at visibility update at add to map
-    if (Transport* transport = player->GetTransport())
+    if (Transport* transport = dynamic_cast<Transport*>(player->GetTransport()))
         for (Transport::PassengerSet::const_iterator itr = transport->GetPassengers().begin(); itr != transport->GetPassengers().end(); ++itr)
             if (player != (*itr) && player->HaveAtClient(*itr))
                 (*itr)->BuildCreateUpdateBlockForPlayer(&data, player);

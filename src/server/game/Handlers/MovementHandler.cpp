@@ -443,14 +443,20 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
         {
             if (!plrMover->GetTransport())
             {
-                if (Transport* transport = plrMover->GetMap()->GetTransport(movementInfo.transport.guid))
-                    transport->AddPassenger(plrMover);
+                if (GameObject* go = plrMover->GetMap()->GetGameObject(movementInfo.transport.guid))
+                    if (TransportBase* transport = go->ToTransportBase())
+                        transport->AddPassenger(plrMover);
             }
-            else if (plrMover->GetTransport()->GetGUID() != movementInfo.transport.guid)
+            else if (plrMover->GetTransport()->GetTransportGUID() != movementInfo.transport.guid)
             {
                 plrMover->GetTransport()->RemovePassenger(plrMover);
-                if (Transport* transport = plrMover->GetMap()->GetTransport(movementInfo.transport.guid))
-                    transport->AddPassenger(plrMover);
+                if (GameObject* go = plrMover->GetMap()->GetGameObject(movementInfo.transport.guid))
+                {
+                    if (TransportBase* transport = go->ToTransportBase())
+                        transport->AddPassenger(plrMover);
+                    else
+                        movementInfo.transport.Reset();
+                }
                 else
                     movementInfo.transport.Reset();
             }
