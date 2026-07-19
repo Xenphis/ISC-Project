@@ -2,6 +2,60 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "CI: act (Linux build)",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "push",
+        "-W",
+        ".github/workflows/linux-build.yml",
+        "-j",
+        "build",
+        "--matrix",
+        "cc:gcc-13"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "CI: macOS",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-GNinja",
+        "-B", ".",
+        "-S", "..",
+        "-DWITH_WARNINGS=1",
+        "-DWITH_WARNINGS_AS_ERRORS=1",
+        "-DUSE_COREPCH=1",
+        "-DUSE_SCRIPTPCH=1",
+        "-DTOOLS=1",
+        "-DSCRIPTS=static",
+        "-DSERVERS=1",
+        "-DBUILD_TESTING=1",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_INSTALL_PREFIX=check_install"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/build"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
       "label": "Run: authserver",
       "type": "shell",
       "command": "${workspaceFolder}/build/bin/Debug/bin/authserver",
