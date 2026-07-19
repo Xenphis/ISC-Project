@@ -39,12 +39,15 @@
 #include "QueryPackets.h"
 #include "ScriptMgr.h"
 #include "SpellMgr.h"
+#include "Timer.h"
 #include "Transport.h"
+#include "UnitDefines.h"
 #include "UpdateFieldFlags.h"
 #include "World.h"
 #include <G3D/Box.h>
 #include <G3D/CoordinateFrame.h>
 #include <G3D/Quat.h>
+#include <unordered_set>
 
 void GameObjectTemplate::InitializeQueryData()
 {
@@ -105,6 +108,158 @@ QuaternionData QuaternionData::fromEulerAnglesZYX(float Z, float Y, float X)
 {
     G3D::Quat quat(G3D::Matrix3::fromEulerAnglesZYX(Z, Y, X));
     return QuaternionData(quat.x, quat.y, quat.z, quat.w);
+}
+
+namespace GameObjectType
+{
+//11 GAMEOBJECT_TYPE_TRANSPORT - serverside animated elevators
+class Transport : public GameObjectTypeBase, public TransportBase
+{
+public:
+    static constexpr Milliseconds PositionUpdateInterval = 50ms;
+
+    explicit Transport(GameObject& owner) : GameObjectTypeBase(owner),
+        _animationInfo(sTransportMgr->GetTransportAnimInfo(owner.GetGOInfo()->entry)),
+        _pathProgress(GameTime::GetGameTimeMS() % GetTransportPeriod()),
+        _positionUpdateTimer(PositionUpdateInterval)
+    {
+    }
+
+    void Update(uint32 diff) override
+    {
+        if (!_animationInfo)
+            return;
+
+        // 3.3.5: the animation only advances while the transport is in GO_STATE_READY
+        if (_owner.GetGoState() != GO_STATE_READY)
+            return;
+
+        _pathProgress += diff;
+
+        _positionUpdateTimer.Update(diff);
+        if (!_positionUpdateTimer.Passed())
+            return;
+
+        _positionUpdateTimer.Reset(PositionUpdateInterval);
+
+        uint32 timer = _pathProgress % GetTransportPeriod();
+
+        TransportAnimationEntry const* oldAnimation = _animationInfo->GetPrevAnimNode(timer);
+        TransportAnimationEntry const* newAnimation = _animationInfo->GetNextAnimNode(timer);
+        if (oldAnimation && newAnimation && oldAnimation != newAnimation)
+        {
+            G3D::Vector3 prev(oldAnimation->Pos.X, oldAnimation->Pos.Y, oldAnimation->Pos.Z);
+            G3D::Vector3 next(newAnimation->Pos.X, newAnimation->Pos.Y, newAnimation->Pos.Z);
+
+            float animProgress = float(timer - oldAnimation->TimeIndex) / float(newAnimation->TimeIndex - oldAnimation->TimeIndex);
+
+            G3D::Vector3 dst = G3D::Matrix3::fromEulerAnglesZYX(_owner.GetStationaryO(), 0.0f, 0.0f) * prev.lerp(next, animProgress);
+
+            dst += G3D::Vector3(_owner.GetStationaryX(), _owner.GetStationaryY(), _owner.GetStationaryZ());
+
+            _owner.GetMap()->GameObjectRelocation(&_owner, dst.x, dst.y, dst.z, _owner.GetOrientation());
+        }
+
+        TransportRotationEntry const* oldRotation = _animationInfo->GetPrevAnimRotation(timer);
+        TransportRotationEntry const* newRotation = _animationInfo->GetNextAnimRotation(timer);
+        if (oldRotation && newRotation && oldRotation != newRotation)
+        {
+            G3D::Quat prev(oldRotation->X, oldRotation->Y, oldRotation->Z, oldRotation->W);
+            G3D::Quat next(newRotation->X, newRotation->Y, newRotation->Z, newRotation->W);
+
+            float animProgress = float(timer - oldRotation->TimeIndex) / float(newRotation->TimeIndex - oldRotation->TimeIndex);
+
+            G3D::Quat rotation = prev.slerp(next, animProgress);
+
+            _owner.SetLocalRotation(rotation.x, rotation.y, rotation.z, rotation.w);
+            _owner.UpdateModelPosition();
+        }
+    }
+
+    void OnRelocated() override
+    {
+        UpdatePassengerPositions();
+    }
+
+    void UpdatePassengerPositions()
+    {
+        for (WorldObject* passenger : _passengers)
+        {
+            float x, y, z, o;
+            passenger->m_movementInfo.transport.pos.GetPosition(x, y, z, o);
+            CalculatePassengerPosition(x, y, z, &o);
+            UpdatePassengerPosition(_owner.GetMap(), passenger, x, y, z, o, true);
+        }
+    }
+
+    uint32 GetTransportPeriod() const
+    {
+        if (_animationInfo)
+            return _animationInfo->TotalTime;
+
+        return 1;
+    }
+
+    uint32 GetTimer() const
+    {
+        return _pathProgress;
+    }
+
+    ObjectGuid GetTransportGUID() const override { return _owner.GetGUID(); }
+
+    float GetTransportOrientation() const override { return _owner.GetOrientation(); }
+
+    void AddPassenger(WorldObject* passenger) override
+    {
+        if (!_owner.IsInWorld())
+            return;
+
+        if (_passengers.insert(passenger).second)
+        {
+            passenger->SetTransport(this);
+            passenger->m_movementInfo.transport.guid = GetTransportGUID();
+            TC_LOG_DEBUG("entities.transport", "Object {} boarded transport {}.", passenger->GetName(), _owner.GetName());
+        }
+    }
+
+    TransportBase* RemovePassenger(WorldObject* passenger) override
+    {
+        if (_passengers.erase(passenger) > 0)
+        {
+            passenger->SetTransport(nullptr);
+            passenger->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+            passenger->m_movementInfo.transport.Reset();
+            TC_LOG_DEBUG("entities.transport", "Object {} removed from transport {}.", passenger->GetName(), _owner.GetName());
+
+            if (Player* plr = passenger->ToPlayer())
+                plr->SetFallInformation(0, plr->GetPositionZ());
+        }
+
+        return this;
+    }
+
+    void CalculatePassengerPosition(float& x, float& y, float& z, float* o) const override
+    {
+        TransportBase::CalculatePassengerPosition(x, y, z, o, _owner.GetPositionX(), _owner.GetPositionY(), _owner.GetPositionZ(), _owner.GetOrientation());
+    }
+
+    void CalculatePassengerOffset(float& x, float& y, float& z, float* o) const override
+    {
+        TransportBase::CalculatePassengerOffset(x, y, z, o, _owner.GetPositionX(), _owner.GetPositionY(), _owner.GetPositionZ(), _owner.GetOrientation());
+    }
+
+    int32 GetMapIdForSpawning() const override
+    {
+        // 3.3.5 type 11 transports cannot span multiple maps
+        return -1;
+    }
+
+private:
+    TransportAnimation const* _animationInfo;
+    uint32 _pathProgress;
+    TimeTracker _positionUpdateTimer;
+    std::unordered_set<WorldObject*> _passengers;
+};
 }
 
 GameObject::GameObject() : WorldObject(false), MapObject(),
@@ -351,12 +506,11 @@ bool GameObject::Create(uint32 entry, Map* map, uint32 phaseMask, Position const
             SetGoAnimProgress(255);
             break;
         case GAMEOBJECT_TYPE_TRANSPORT:
+            m_goTypeImpl = std::make_unique<GameObjectType::Transport>(*this);
             SetLevel(goinfo->transport.pause);
             SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
             SetGoAnimProgress(animprogress);
-            m_goValue.Transport.PathProgress = 0;
-            m_goValue.Transport.AnimationInfo = sTransportMgr->GetTransportAnimInfo(goinfo->entry);
-            m_goValue.Transport.CurrentSeg = 0;
+            setActive(true);
             break;
         case GAMEOBJECT_TYPE_FISHINGNODE:
             SetGoAnimProgress(0);
@@ -518,41 +672,6 @@ void GameObject::Update(uint32 diff)
                             m_cooldownTime = GameTime::GetGameTimeMS() + goInfo->trap.startDelay * IN_MILLISECONDS;
 
                     SetLootState(GO_READY);
-                    break;
-                }
-                case GAMEOBJECT_TYPE_TRANSPORT:
-                {
-                    if (!m_goValue.Transport.AnimationInfo)
-                        break;
-
-                    if (GetGoState() == GO_STATE_READY)
-                    {
-                        m_goValue.Transport.PathProgress += diff;
-                        /* TODO: Fix movement in unloaded grid - currently GO will just disappear
-                        uint32 timer = m_goValue.Transport.PathProgress % m_goValue.Transport.AnimationInfo->TotalTime;
-                        TransportAnimationEntry const* node = m_goValue.Transport.AnimationInfo->GetAnimNode(timer);
-                        if (node && m_goValue.Transport.CurrentSeg != node->TimeSeg)
-                        {
-                            m_goValue.Transport.CurrentSeg = node->TimeSeg;
-
-                            G3D::Quat rotation;
-                            if (TransportRotationEntry const* rot = m_goValue.Transport.AnimationInfo->GetAnimRotation(timer))
-                                rotation = G3D::Quat(rot->X, rot->Y, rot->Z, rot->W);
-
-                            G3D::Vector3 pos = rotation.toRotationMatrix()
-                                             * G3D::Matrix3::fromEulerAnglesZYX(GetOrientation(), 0.0f, 0.0f)
-                                             * G3D::Vector3(node->X, node->Y, node->Z);
-
-                            pos += G3D::Vector3(GetStationaryX(), GetStationaryY(), GetStationaryZ());
-
-                            G3D::Vector3 src(GetPositionX(), GetPositionY(), GetPositionZ());
-
-                            TC_LOG_DEBUG("misc", "Src: {} Dest: {}", src.toString(), pos.toString());
-
-                            GetMap()->GameObjectRelocation(this, pos.x, pos.y, pos.z, GetOrientation());
-                        }
-                        */
-                    }
                     break;
                 }
                 case GAMEOBJECT_TYPE_FISHINGNODE:
@@ -1288,7 +1407,7 @@ bool GameObject::IsDynTransport() const
     if (!gInfo)
         return false;
 
-    return gInfo->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT || (gInfo->type == GAMEOBJECT_TYPE_TRANSPORT && !gInfo->transport.pause);
+    return gInfo->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT || gInfo->type == GAMEOBJECT_TYPE_TRANSPORT;
 }
 
 bool GameObject::IsDestructibleBuilding() const
@@ -2629,15 +2748,6 @@ void GameObject::SetGoState(GOState state)
     }
 }
 
-uint32 GameObject::GetTransportPeriod() const
-{
-    ASSERT(GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT);
-    if (m_goValue.Transport.AnimationInfo)
-        return m_goValue.Transport.AnimationInfo->TotalTime;
-
-    return 0;
-}
-
 void GameObject::SetDisplayId(uint32 displayid)
 {
     SetUInt32Value(GAMEOBJECT_DISPLAYID, displayid);
@@ -2786,18 +2896,20 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player co
                         break;
                     case GAMEOBJECT_TYPE_TRANSPORT:
                     {
-                        if (uint32 transportPeriod = GetTransportPeriod())
+                        GameObjectType::Transport const* transport = static_cast<GameObjectType::Transport const*>(m_goTypeImpl.get());
+                        if (uint32 transportPeriod = transport->GetTransportPeriod())
                         {
-                            float timer = float(m_goValue.Transport.PathProgress % transportPeriod);
+                            float timer = float(transport->GetTimer() % transportPeriod);
                             pathProgress = int16(timer / float(transportPeriod) * 65535.0f);
                         }
                         break;
                     }
                     case GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT:
                     {
-                        if (uint32 transportPeriod = GetTransportPeriod())
+                        Transport const* transport = ToTransport();
+                        if (uint32 transportPeriod = transport->GetTransportPeriod())
                         {
-                            float timer = float(ToTransport()->GetTimer() % transportPeriod);
+                            float timer = float(transport->GetTimer() % transportPeriod);
                             pathProgress = int16(timer / float(transportPeriod) * 65535.0f);
                         }
                         break;
@@ -2849,11 +2961,10 @@ TransportBase const* GameObject::ToTransportBase() const
 {
     switch (GetGoType())
     {
+        case GAMEOBJECT_TYPE_TRANSPORT:
+            return static_cast<GameObjectType::Transport const*>(m_goTypeImpl.get());
         case GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT:
             return static_cast<Transport const*>(this);
-        case GAMEOBJECT_TYPE_TRANSPORT:
-            // GameObjectType::Transport (m_goTypeImpl) not implemented yet for type 11
-            break;
         default:
             break;
     }
