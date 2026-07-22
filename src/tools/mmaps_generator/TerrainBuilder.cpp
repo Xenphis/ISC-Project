@@ -584,12 +584,12 @@ namespace MMAP
     bool TerrainBuilder::loadVMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData)
     {
         VMapManager2* vmapManager = new VMapManager2();
-        int result = vmapManager->loadMap("vmaps", mapID, tileX, tileY);
+        LoadResult result = vmapManager->loadMap("vmaps", mapID, tileX, tileY);
         bool retval = false;
 
         do
         {
-            if (result == VMAP_LOAD_RESULT_ERROR)
+            if (result != LoadResult::Success)
                 break;
 
             InstanceTreeMap instanceTrees;
