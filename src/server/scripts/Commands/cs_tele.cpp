@@ -32,6 +32,7 @@ EndScriptData */
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "RBAC.h"
+#include "TerrainMgr.h"
 #include "WorldSession.h"
 
 using namespace Trinity::ChatCommands;
@@ -164,7 +165,7 @@ public:
 
             handler->PSendSysMessage(LANG_TELEPORTING_TO, nameLink.c_str(), handler->GetTrinityString(LANG_OFFLINE), locationName.c_str());
 
-            Player::SavePositionInDB({ mapId, pos }, sMapMgr->GetZoneId(PHASEMASK_NORMAL, { mapId, pos }), player.GetGUID(), nullptr);
+            Player::SavePositionInDB({ mapId, pos }, sTerrainMgr.GetZoneId(PHASEMASK_NORMAL, { mapId, pos }), player.GetGUID(), nullptr);
         }
 
         return true;

@@ -23,12 +23,12 @@
 #include "DBCStores.h"
 #include "GameTime.h"
 #include "Log.h"
-#include "MapManager.h"
 #include "NPCHandler.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "QueryPackets.h"
+#include "TerrainMgr.h"
 #include "Transport.h"
 #include "UpdateMask.h"
 #include "World.h"
@@ -154,12 +154,12 @@ void WorldSession::HandleQueryCorpseLocation(WorldPackets::Query::QueryCorpseLoc
             if (corpseMapEntry->IsDungeon() && corpseMapEntry->CorpseMapID >= 0)
             {
                 // if corpse map have entrance
-                if (Map const* entranceMap = sMapMgr->CreateBaseMap(corpseMapEntry->CorpseMapID))
+                if (std::shared_ptr<TerrainInfo> entranceTerrain = sTerrainMgr.LoadTerrain(corpseMapEntry->CorpseMapID))
                 {
                     mapID = corpseMapEntry->CorpseMapID;
                     x = corpseMapEntry->Corpse.X;
                     y = corpseMapEntry->Corpse.Y;
-                    z = entranceMap->GetHeight(GetPlayer()->GetPhaseMask(), x, y, MAX_HEIGHT);
+                    z = entranceTerrain->GetStaticHeight(x, y, MAX_HEIGHT);
                 }
             }
         }

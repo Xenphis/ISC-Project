@@ -101,7 +101,7 @@ namespace VMAP
             ~VMapManager2(void);
 
             void InitializeThreadUnsafe(const std::vector<uint32>& mapIds);
-            int loadMap(char const* pBasePath, unsigned int mapId, int x, int y) override;
+            LoadResult loadMap(char const* pBasePath, unsigned int mapId, int x, int y) override;
 
             void unloadMap(unsigned int mapId, int x, int y) override;
             void unloadMap(unsigned int mapId) override;

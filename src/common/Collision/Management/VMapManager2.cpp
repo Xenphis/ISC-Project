@@ -81,18 +81,12 @@ namespace VMAP
         return fname.str();
     }
 
-    int VMapManager2::loadMap(char const* basePath, unsigned int mapId, int x, int y)
+    LoadResult VMapManager2::loadMap(char const* basePath, unsigned int mapId, int x, int y)
     {
-        int result = VMAP_LOAD_RESULT_IGNORED;
-        if (isMapLoadingEnabled())
-        {
-            if (_loadMap(mapId, basePath, x, y))
-                result = VMAP_LOAD_RESULT_OK;
-            else
-                result = VMAP_LOAD_RESULT_ERROR;
-        }
+        if (!isMapLoadingEnabled())
+            return LoadResult::DisabledInConfig;
 
-        return result;
+        return _loadMap(mapId, basePath, x, y) ? LoadResult::Success : LoadResult::ReadFromFileFailed;
     }
 
     InstanceTreeMap::const_iterator VMapManager2::GetMapTree(uint32 mapId) const

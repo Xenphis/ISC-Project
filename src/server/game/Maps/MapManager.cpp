@@ -236,16 +236,6 @@ void MapManager::Update(uint32 diff)
 
 void MapManager::DoDelayedMovesAndRemoves() { }
 
-bool MapManager::ExistMapAndVMap(uint32 mapid, float x, float y)
-{
-    GridCoord p = Trinity::ComputeGridCoord(x, y);
-
-    int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
-    int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
-
-    return Map::ExistMap(mapid, gx, gy) && Map::ExistVMap(mapid, gx, gy);
-}
-
 bool MapManager::IsValidMAP(uint32 mapid, bool startUp)
 {
     MapEntry const* mEntry = sMapStore.LookupEntry(mapid);

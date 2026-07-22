@@ -50,6 +50,7 @@
 #include "SpellScript.h"
 #include "StringConvert.h"
 #include "TemporarySummon.h"
+#include "TerrainMgr.h"
 #include "ThreadPool.h"
 #include "UpdateMask.h"
 #include "Util.h"
@@ -2315,7 +2316,7 @@ void ObjectMgr::LoadCreatures()
         {
             uint32 zoneId = 0;
             uint32 areaId = 0;
-            sMapMgr->GetZoneAndAreaId(data.phaseMask, zoneId, areaId, data.mapId, data.spawnPoint);
+            sTerrainMgr.GetZoneAndAreaId(data.phaseMask, zoneId, areaId, data.mapId, data.spawnPoint);
 
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_ZONE_AREA_DATA);
 
@@ -2633,7 +2634,7 @@ void ObjectMgr::LoadGameObjects()
         {
             uint32 zoneId = 0;
             uint32 areaId = 0;
-            sMapMgr->GetZoneAndAreaId(data.phaseMask, zoneId, areaId, data.mapId, data.spawnPoint);
+            sTerrainMgr.GetZoneAndAreaId(data.phaseMask, zoneId, areaId, data.mapId, data.spawnPoint);
 
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_GAMEOBJECT_ZONE_AREA_DATA);
 
@@ -6911,7 +6912,7 @@ WorldSafeLocsEntry const* ObjectMgr::GetDefaultGraveyard(uint32 team) const
 WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveyard(float x, float y, float z, uint32 MapId, uint32 team, WorldObject* conditionObject) const
 {
     // search for zone associated closest graveyard
-    uint32 zoneId = sMapMgr->GetZoneId(PHASEMASK_NORMAL, MapId, x, y, z);
+    uint32 zoneId = sTerrainMgr.GetZoneId(PHASEMASK_NORMAL, MapId, x, y, z);
 
     if (!zoneId)
     {

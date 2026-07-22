@@ -25,7 +25,6 @@
 #include "GridDefines.h"
 #include "GridRefManager.h"
 #include "MapDefines.h"
-#include "MMapDefines.h"
 #include "MapRefManager.h"
 #include "MPSCQueue.h"
 #include "ObjectGuid.h"
@@ -53,6 +52,7 @@ class MapInstanced;
 class Object;
 class Player;
 class TempSummon;
+class TerrainInfo;
 class Transport;
 class Unit;
 class Weather;
@@ -70,7 +70,6 @@ enum WeatherState : uint32;
 
 namespace Trinity { struct ObjectUpdater; }
 namespace VMAP { enum class ModelIgnoreFlags : uint32; }
-namespace G3D { class Plane; }
 
 enum TransferAbortReason : uint8
 {
@@ -101,69 +100,6 @@ struct ScriptAction
     ScriptInfo const* script;                               ///> pointer to static script data
 };
 
-class TC_GAME_API GridMap
-{
-    uint32  _flags;
-    union{
-        float* m_V9;
-        uint16* m_uint16_V9;
-        uint8* m_uint8_V9;
-    };
-    union{
-        float* m_V8;
-        uint16* m_uint16_V8;
-        uint8* m_uint8_V8;
-    };
-    G3D::Plane* _minHeightPlanes;
-    // Height level data
-    float _gridHeight;
-    float _gridIntHeightMultiplier;
-
-    // Area data
-    uint16* _areaMap;
-
-    // Liquid data
-    float _liquidLevel;
-    uint16* _liquidEntry;
-    map_liquidHeaderTypeFlags* _liquidFlags;
-    float* _liquidMap;
-    uint16 _gridArea;
-    uint16 _liquidGlobalEntry;
-    map_liquidHeaderTypeFlags _liquidGlobalFlags;
-    uint8 _liquidOffX;
-    uint8 _liquidOffY;
-    uint8 _liquidWidth;
-    uint8 _liquidHeight;
-
-    uint16* _holes;
-
-    bool loadAreaData(FILE* in, uint32 offset, uint32 size);
-    bool loadHeightData(FILE* in, uint32 offset, uint32 size);
-    bool loadLiquidData(FILE* in, uint32 offset, uint32 size);
-    bool loadHolesData(FILE* in, uint32 offset, uint32 size);
-    bool isHole(int row, int col) const;
-
-    // Get height functions and pointers
-    typedef float (GridMap::*GetHeightPtr) (float x, float y) const;
-    GetHeightPtr _gridGetHeight;
-    float getHeightFromFloat(float x, float y) const;
-    float getHeightFromUint16(float x, float y) const;
-    float getHeightFromUint8(float x, float y) const;
-    float getHeightFromFlat(float x, float y) const;
-
-public:
-    GridMap();
-    ~GridMap();
-    bool loadData(char const* filename);
-    void unloadData();
-
-    uint16 getArea(float x, float y) const;
-    inline float getHeight(float x, float y) const {return (this->*_gridGetHeight)(x, y);}
-    float getMinHeight(float x, float y) const;
-    float getLiquidLevel(float x, float y) const;
-    ZLiquidStatus GetLiquidStatus(float x, float y, float z, Optional<map_liquidHeaderTypeFlags> ReqLiquidType, LiquidData* data = 0, float collisionHeight = 2.03128f); // DEFAULT_COLLISION_HEIGHT in Object.h
-};
-
 #pragma pack(push, 1)
 
 struct ZoneDynamicInfo
@@ -187,10 +123,6 @@ struct ZoneDynamicInfo
 
 #pragma pack(pop)
 
-#define MAX_HEIGHT            100000.0f                     // can be use for find ground height at surface
-#define INVALID_HEIGHT       -100000.0f                     // for check, must be equal to VMAP_INVALID_HEIGHT, real value for unknown height is VMAP_INVALID_HEIGHT_VALUE
-#define MAX_FALL_DISTANCE     250000.0f                     // "unlimited fall" to find VMap ground if it is available, just larger than MAX_HEIGHT - INVALID_HEIGHT
-#define DEFAULT_HEIGHT_SEARCH     50.0f                     // default search distance to find height at nearby locations
 #define MIN_UNLOAD_DELAY      1                             // immediate unload
 #define MAP_INVALID_ZONE      0xFFFFFFFF
 
@@ -298,13 +230,10 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         time_t GetGridExpiry(void) const { return i_gridExpiry; }
         uint32 GetId() const;
 
-        static bool ExistMap(uint32 mapid, int gx, int gy);
-        static bool ExistVMap(uint32 mapid, int gx, int gy);
-
         static void InitStateMachine();
         static void DeleteStateMachine();
 
-        Map const* GetParent() const { return m_parentMap; }
+        TerrainInfo* GetTerrain() const { return m_terrain.get(); }
 
         void GetFullTerrainStatusForPosition(uint32 phaseMask, float x, float y, float z, PositionFullTerrainStatus& data, Optional<map_liquidHeaderTypeFlags> reqLiquidType = {}, float collisionHeight = 2.03128f) const; // DEFAULT_COLLISION_HEIGHT in Object.h
         ZLiquidStatus GetLiquidStatus(uint32 phaseMask, float x, float y, float z, Optional<map_liquidHeaderTypeFlags> ReqLiquidType, LiquidData* data = nullptr, float collisionHeight = 2.03128f) const; // DEFAULT_COLLISION_HEIGHT in Object.h
@@ -565,12 +494,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         virtual std::string GetDebugInfo() const;
 
     private:
-        void LoadMapAndVMap(int gx, int gy);
-        void LoadVMap(int gx, int gy);
-        void LoadMap(int gx, int gy, bool reload = false);
-        void LoadMMap(int gx, int gy);
-        GridMap* GetGrid(float x, float y);
-
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
 
         void SendInitSelf(Player* player);
@@ -616,7 +539,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void SendObjectUpdates();
 
     protected:
-        void SetUnloadReferenceLock(GridCoord const& p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
         std::mutex _mapLock;
         std::mutex _gridLock;
@@ -656,12 +578,9 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         time_t i_gridExpiry;
 
-        //used for fast base_map (e.g. MapInstanced class object) search for
-        //InstanceMaps and BattlegroundMaps...
-        Map* m_parentMap;
+        std::shared_ptr<TerrainInfo> m_terrain;
 
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
-        GridMap* GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
         //these functions used to process player/mob aggro reactions and

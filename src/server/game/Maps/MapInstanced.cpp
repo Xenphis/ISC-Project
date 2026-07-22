@@ -32,8 +32,6 @@
 
 MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DUNGEON_DIFFICULTY_NORMAL)
 {
-    // fill with zero
-    memset(&GridMapReference, 0, MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS*sizeof(uint16));
 }
 
 void MapInstanced::InitVisibilityDistance()
@@ -49,7 +47,6 @@ void MapInstanced::InitVisibilityDistance()
 
 void MapInstanced::Update(uint32 t)
 {
-    // take care of loaded GridMaps (when unused, unload it!)
     Map::Update(t);
 
     // update the instanced maps
@@ -104,7 +101,7 @@ void MapInstanced::UnloadAll()
 
     m_InstancedMaps.clear();
 
-    // Unload own grids (just dummy(placeholder) grids, neccesary to unload GridMaps!)
+    // Unload own grids (just dummy(placeholder) grids)
     Map::UnloadAll();
 }
 

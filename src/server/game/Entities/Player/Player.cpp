@@ -99,6 +99,7 @@
 #include "SpellPackets.h"
 #include "StringConvert.h"
 #include "TalentPackets.h"
+#include "TerrainMgr.h"
 #include "TicketMgr.h"
 #include "TradeData.h"
 #include "Trainer.h"
@@ -6754,7 +6755,7 @@ uint32 Player::GetZoneIdFromDB(ObjectGuid guid)
         if (!sMapStore.LookupEntry(map))
             return 0;
 
-        zone = sMapMgr->GetZoneId(PHASEMASK_NORMAL, map, posx, posy, posz);
+        zone = sTerrainMgr.GetZoneId(PHASEMASK_NORMAL, map, posx, posy, posz);
 
         if (zone > 0)
         {
