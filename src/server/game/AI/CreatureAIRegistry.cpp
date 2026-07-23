@@ -19,6 +19,7 @@
 #include "GameObjectAIFactory.h"
 
 #include "CombatAI.h"
+#include "CompanionAI.h"
 #include "GuardAI.h"
 #include "PassiveAI.h"
 #include "PetAI.h"
@@ -47,6 +48,7 @@ namespace AIRegistry
         (new CreatureAIFactory<TurretAI>("TurretAI"))->RegisterSelf();
         (new CreatureAIFactory<VehicleAI>("VehicleAI"))->RegisterSelf();
         (new CreatureAIFactory<SmartAI>("SmartAI"))->RegisterSelf();
+        (new CreatureAIFactory<CompanionAI>("CompanionAI"))->RegisterSelf();
         (new CreatureAIFactory<ScheduledChangeAI, false>("ScheduledChangeAI"))->RegisterSelf();
 
         (new GameObjectAIFactory<NullGameObjectAI>("NullGameObjectAI"))->RegisterSelf();

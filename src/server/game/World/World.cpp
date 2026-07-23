@@ -31,6 +31,7 @@
 #include "CalendarMgr.h"
 #include "ChannelMgr.h"
 #include "CharacterCache.h"
+#include "CompanionMgr.h"
 #include "CharacterDatabaseCleaner.h"
 #include "Chat.h"
 #include "ChatCommand.h"
@@ -1918,6 +1919,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading UNIT_NPC_FLAG_SPELLCLICK Data..."); // must be after LoadQuests
     sObjectMgr->LoadNPCSpellClickSpells();
+
+    TC_LOG_INFO("server.loading", "Loading Companion Templates...");
+    sCompanionMgr->LoadTemplates();                             // must be after LoadCreatureTemplates()
 
     TC_LOG_INFO("server.loading", "Loading Vehicle Templates...");
     sObjectMgr->LoadVehicleTemplate();                          // must be after LoadCreatureTemplates()

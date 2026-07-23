@@ -10,6 +10,13 @@ client/server architecture is preserved, but the server (worldserver/authserver)
 support intelligent NPC bots/companions and other single-player-specific features. This is an educational project;
 no commercial use or mass distribution is intended.
 
+**Architecture conventions for new ISC systems:**
+- The project is a full overhaul toward a standalone framework: new core services (managers/singletons) are
+  first-class citizens of the core, not add-ons. Initialize them directly in `World::SetInitialWorldSettings`
+  (`src/server/game/World/World.cpp`) alongside the other singletons — do NOT use ScriptMgr hooks
+  (WorldScript/PlayerScript) to bootstrap core services. Script hooks are reserved for content scripts.
+- All code and comments must be written in English (docs/ and conversations stay in French).
+
 **Coding rules:**
 1. **Think before coding.** State assumptions out loud. If a request is ambiguous, ask instead of guessing. If a
    simpler approach exists, push back on the request rather than silently implementing the more complex one.
