@@ -35,7 +35,7 @@ void HashMapHolder<T>::Insert(T* o)
         || std::is_same<Transport, T>::value,
         "Only Player and Transport can be registered in global HashMapHolder");
 
-    std::unique_lock<std::shared_mutex> lock(*GetLock());
+    std::scoped_lock lock(*GetLock());
 
     GetContainer()[o->GetGUID()] = o;
 }
@@ -43,7 +43,7 @@ void HashMapHolder<T>::Insert(T* o)
 template<class T>
 void HashMapHolder<T>::Remove(T* o)
 {
-    std::unique_lock<std::shared_mutex> lock(*GetLock());
+    std::scoped_lock lock(*GetLock());
 
     GetContainer().erase(o->GetGUID());
 }
@@ -51,7 +51,7 @@ void HashMapHolder<T>::Remove(T* o)
 template<class T>
 T* HashMapHolder<T>::Find(ObjectGuid guid)
 {
-    std::shared_lock<std::shared_mutex> lock(*GetLock());
+    std::shared_lock lock(*GetLock());
 
     typename MapType::iterator itr = GetContainer().find(guid);
     return (itr != GetContainer().end()) ? itr->second : nullptr;
@@ -264,7 +264,7 @@ Player* ObjectAccessor::FindConnectedPlayerByName(std::string_view name)
 
 void ObjectAccessor::SaveAllPlayers()
 {
-    std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    std::shared_lock lock(*HashMapHolder<Player>::GetLock());
 
     HashMapHolder<Player>::MapType const& m = GetPlayers();
     for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)

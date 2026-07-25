@@ -136,7 +136,7 @@ void WorldSocket::SendAuthSession()
 void WorldSocket::OnClose()
 {
     {
-        std::lock_guard<std::mutex> sessionGuard(_worldSessionLock);
+        std::scoped_lock sessionGuard(_worldSessionLock);
         _worldSession = nullptr;
     }
 }
@@ -668,7 +668,7 @@ bool WorldSocket::HandlePing(WorldPacket& recvPacket)
 
             if (maxAllowed && _OverSpeedPings > maxAllowed)
             {
-                std::unique_lock<std::mutex> sessionGuard(_worldSessionLock);
+                std::scoped_lock sessionGuard(_worldSessionLock);
 
                 if (_worldSession && !_worldSession->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_OVERSPEED_PING))
                 {
@@ -684,7 +684,7 @@ bool WorldSocket::HandlePing(WorldPacket& recvPacket)
     }
 
     {
-        std::lock_guard<std::mutex> sessionGuard(_worldSessionLock);
+        std::scoped_lock sessionGuard(_worldSessionLock);
 
         if (_worldSession)
             _worldSession->SetLatency(latency);

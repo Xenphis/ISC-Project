@@ -261,7 +261,7 @@ namespace VMAP
     WorldModel* VMapManager2::acquireModelInstance(const std::string& basepath, const std::string& filename, uint32 flags/* Only used when creating the model */)
     {
         //! Critical section, thread safe access to iLoadedModelFiles
-        std::lock_guard<std::mutex> lock(LoadedModelFilesLock);
+        std::scoped_lock lock(LoadedModelFilesLock);
 
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())
@@ -287,7 +287,7 @@ namespace VMAP
     void VMapManager2::releaseModelInstance(const std::string &filename)
     {
         //! Critical section, thread safe access to iLoadedModelFiles
-        std::lock_guard<std::mutex> lock(LoadedModelFilesLock);
+        std::scoped_lock lock(LoadedModelFilesLock);
 
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())

@@ -69,7 +69,7 @@ Map* MapManager::CreateBaseMap(uint32 id)
 
     if (map == nullptr)
     {
-        std::lock_guard<std::mutex> lock(_mapsLock);
+        std::scoped_lock lock(_mapsLock);
 
         MapEntry const* entry = sMapStore.LookupEntry(id);
         ASSERT(entry);
@@ -269,7 +269,7 @@ void MapManager::UnloadAll()
 
 uint32 MapManager::GetNumInstances()
 {
-    std::lock_guard<std::mutex> lock(_mapsLock);
+    std::scoped_lock lock(_mapsLock);
 
     uint32 ret = 0;
     for (auto const& [_, map] : i_maps)
@@ -284,7 +284,7 @@ uint32 MapManager::GetNumInstances()
 
 uint32 MapManager::GetNumPlayersInInstances()
 {
-    std::lock_guard<std::mutex> lock(_mapsLock);
+    std::scoped_lock lock(_mapsLock);
 
     uint32 ret = 0;
     for (auto& [_, map] : i_maps)

@@ -138,7 +138,7 @@ bool LootItemStorage::LoadStoredLoot(Item* item, Player* player)
 
     // read
     {
-        std::shared_lock<std::shared_mutex> lock(*GetLock());
+        std::shared_lock lock(*GetLock());
 
         auto itr = _lootItemStore.find(loot->containerID);
         if (itr == _lootItemStore.end())
@@ -190,7 +190,7 @@ bool LootItemStorage::LoadStoredLoot(Item* item, Player* player)
 void LootItemStorage::RemoveStoredMoneyForContainer(uint32 containerId)
 {
     // write
-    std::unique_lock<std::shared_mutex> lock(*GetLock());
+    std::scoped_lock lock(*GetLock());
 
     auto itr = _lootItemStore.find(containerId);
     if (itr == _lootItemStore.end())
@@ -203,7 +203,7 @@ void LootItemStorage::RemoveStoredLootForContainer(uint32 containerId)
 {
     // write
     {
-        std::unique_lock<std::shared_mutex> lock(*GetLock());
+        std::scoped_lock lock(*GetLock());
         _lootItemStore.erase(containerId);
     }
 
@@ -222,7 +222,7 @@ void LootItemStorage::RemoveStoredLootForContainer(uint32 containerId)
 void LootItemStorage::RemoveStoredLootItemForContainer(uint32 containerId, uint32 itemId, uint32 count, uint32 itemIndex)
 {
     // write
-    std::unique_lock<std::shared_mutex> lock(*GetLock());
+    std::scoped_lock lock(*GetLock());
 
     auto itr = _lootItemStore.find(containerId);
     if (itr == _lootItemStore.end())
@@ -239,7 +239,7 @@ void LootItemStorage::AddNewStoredLoot(Loot* loot, Player* player)
 
     // read
     {
-        std::shared_lock<std::shared_mutex> lock(*GetLock());
+        std::shared_lock lock(*GetLock());
 
         auto itr = _lootItemStore.find(loot->containerID);
         if (itr != _lootItemStore.end())
@@ -281,7 +281,7 @@ void LootItemStorage::AddNewStoredLoot(Loot* loot, Player* player)
 
     // write
     {
-        std::unique_lock<std::shared_mutex> lock(*GetLock());
+        std::scoped_lock lock(*GetLock());
         _lootItemStore.emplace(loot->containerID, std::move(container));
     }
 }
