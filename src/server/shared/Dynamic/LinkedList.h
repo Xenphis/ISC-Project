@@ -81,7 +81,7 @@ class LinkedListElement
         LinkedListElement& operator=(LinkedListElement const&) = delete;
 
     protected:
-        ~LinkedListElement()
+        virtual ~LinkedListElement()
         {
             delink();
         }

@@ -199,25 +199,20 @@ typedef std::vector<NotNormalLootItem> NotNormalLootItemList;
 typedef std::vector<LootItem> LootItemList;
 typedef std::unordered_map<ObjectGuid, NotNormalLootItemList*> NotNormalLootItemMap;
 
-class LootValidatorRef : public Reference<Loot, LootValidatorRef>
+class LootValidatorRef : public Reference<Loot, LootValidatorRef, LootValidatorRef>
 {
     public:
         LootValidatorRef() { }
-        void targetObjectDestroyLink() override { }
-        void sourceObjectDestroyLink() override { }
+        // kept virtual, Roll derives from this class and needs to be notified
+        virtual void targetObjectBuildLink() = 0;
+        void targetObjectDestroyLink() { }
+        void sourceObjectDestroyLink() { }
 };
 
 //=====================================================
 
-class LootValidatorRefManager : public RefManager<Loot, LootValidatorRef>
+class LootValidatorRefManager : public RefManager<LootValidatorRef>
 {
-    public:
-        typedef LinkedListHead::Iterator< LootValidatorRef > iterator;
-
-        LootValidatorRef* getFirst() { return (LootValidatorRef*)RefManager<Loot, LootValidatorRef>::getFirst(); }
-
-        iterator begin() { return iterator(getFirst()); }
-        iterator end()   { return iterator(nullptr); }
 };
 
 //=====================================================
