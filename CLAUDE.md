@@ -16,6 +16,11 @@ no commercial use or mass distribution is intended.
   (`src/server/game/World/World.cpp`) alongside the other singletons — do NOT use ScriptMgr hooks
   (WorldScript/PlayerScript) to bootstrap core services. Script hooks are reserved for content scripts.
 - All code and comments must be written in English (docs/ and conversations stay in French).
+- Don't over-comment: only comment the non-obvious (a hidden constraint, a subtle invariant, a workaround). If a
+  comment just restates what the code already says, omit it.
+- Use fmt-style `{}` placeholders wherever the API is fmt-native (`TC_LOG_*`, `Trinity::StringFormat`,
+  `fmt::format`). Exception: `ChatHandler::PSendSysMessage` is printf-style by contract (backed by
+  `fmt::printf_args`) — keep `%s`/`%u` there, `{}` would print literally instead of substituting.
 
 **Coding rules:**
 1. **Think before coding.** State assumptions out loud. If a request is ambiguous, ask instead of guessing. If a
