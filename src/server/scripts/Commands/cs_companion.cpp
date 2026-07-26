@@ -20,6 +20,7 @@
 #include "ChatCommand.h"
 #include "CompanionAI.h"
 #include "CompanionMgr.h"
+#include "Creature.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "RBAC.h"
