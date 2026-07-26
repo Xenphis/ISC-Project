@@ -30,8 +30,7 @@ class TC_GAME_API CompanionAI : public CreatureAI
         static int32 Permissible(Creature const* /*creature*/) { return PERMIT_BASE_NO; }
 
         void UpdateAI(uint32 diff) override;
-        void AttackStart(Unit* /*victim*/) override { }
-        void MoveInLineOfSight(Unit* /*who*/) override { }
+        void EnterEvadeMode(EvadeReason why) override;
         void JustAppeared() override;
         void JustDied(Unit* /*killer*/) override;
 
@@ -42,6 +41,9 @@ class TC_GAME_API CompanionAI : public CreatureAI
         ObjectGuid GetOwnerGuid() const { return _ownerGuid; }
         void StartFollowing(Player* player);
         void StopFollowing();   // walks back home
+
+        // Called by CompanionMgr when the owner enters combat with target
+        void AssistAgainst(Unit* target);
 
     private:
         void NotifyDismissed();

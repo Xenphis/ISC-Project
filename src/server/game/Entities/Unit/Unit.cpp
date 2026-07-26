@@ -30,6 +30,7 @@
 #include "CombatLogPackets.h"
 #include "CombatPackets.h"
 #include "Common.h"
+#include "CompanionMgr.h"
 #include "ConditionMgr.h"
 #include "Containers.h"
 #include "CreatureAI.h"
@@ -741,6 +742,9 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
             if (Creature* cControlled = controlled->ToCreature())
                 if (CreatureAI* controlledAI = cControlled->AI())
                     controlledAI->OwnerAttackedBy(attacker);
+
+        if (Player* victimPlayer = victim->ToPlayer())
+            sCompanionMgr->AssistOwner(victimPlayer, attacker);
     }
 
     if (Player* player = victim->ToPlayer())
@@ -5634,6 +5638,8 @@ bool Unit::Attack(Unit* victim, bool meleeAttack)
             if (Creature* cControlled = controlled->ToCreature())
                 if (CreatureAI* controlledAI = cControlled->AI())
                     controlledAI->OwnerAttacked(victim);
+
+        sCompanionMgr->AssistOwner(ToPlayer(), victim);
     }
 
     return true;

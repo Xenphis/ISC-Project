@@ -26,6 +26,7 @@
 
 class Creature;
 class Player;
+class Unit;
 
 constexpr uint8 MAX_COMPANIONS = 4;
 
@@ -40,6 +41,11 @@ class TC_GAME_API CompanionMgr
         bool Recruit(Player* player, Creature* creature);
         void DismissAll(Player* player);
         std::vector<ObjectGuid> GetCompanions(ObjectGuid playerGuid) const;
+
+        // Companions are not part of Player::m_Controlled, so the core sites that notify
+        // pets of their owner's combat (Unit::DealDamage, Unit::Attack, Spell::prepare)
+        // reach them through here instead.
+        void AssistOwner(Player* owner, Unit* target);
 
         // Called by CompanionAI when a companion stops following (dismiss, death, owner gone)
         void OnCompanionDismissed(ObjectGuid playerGuid, ObjectGuid companionGuid);

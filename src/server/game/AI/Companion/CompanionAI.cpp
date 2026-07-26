@@ -34,7 +34,7 @@ namespace
 
 CompanionAI::CompanionAI(Creature* creature) : CreatureAI(creature), _checkTimer(0)
 {
-    creature->SetReactState(REACT_PASSIVE);
+    creature->SetReactState(REACT_DEFENSIVE);
 }
 
 void CompanionAI::JustAppeared()
@@ -56,11 +56,14 @@ void CompanionAI::NotifyDismissed()
 
     sCompanionMgr->OnCompanionDismissed(_ownerGuid, me->GetGUID());
     _ownerGuid.Clear();
+    me->RestoreFaction();
 }
 
 void CompanionAI::StartFollowing(Player* player)
 {
     _ownerGuid = player->GetGUID();
+    // Creature vs creature attacks require one side to be hostile to the other
+    me->SetFaction(player->GetFaction());
     // Follow angle spread by companion count so multiple companions don't stack
     float angle = float(M_PI_2) + float(me->GetGUID().GetCounter() % 4) * float(M_PI_4);
     me->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, ChaseAngle(angle));
@@ -68,6 +71,7 @@ void CompanionAI::StartFollowing(Player* player)
 
 void CompanionAI::StopFollowing()
 {
+    me->SetReactState(REACT_DEFENSIVE);   // reset posture for the next recruiter
     NotifyDismissed();
     me->GetMotionMaster()->Clear();
     me->GetMotionMaster()->MoveTargetedHome();
@@ -75,8 +79,11 @@ void CompanionAI::StopFollowing()
 
 void CompanionAI::UpdateAI(uint32 diff)
 {
-    if (!IsRecruited())
+    if (!IsRecruited() || !me->IsAlive())
         return;
+
+    if (me->IsEngaged() && UpdateVictim())
+        DoMeleeAttackIfReady();
 
     if (_checkTimer > diff)
     {
@@ -94,14 +101,35 @@ void CompanionAI::UpdateAI(uint32 diff)
         return;
     }
 
-    if (!me->IsAlive())
-        return;
-
     if (!me->IsWithinDist(owner, COMPANION_TELEPORT_DIST))
         me->NearTeleportTo(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ(), owner->GetOrientation());
 
-    if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
+    me->SetHomePosition(owner->GetPosition());
+
+    if (!me->IsEngaged() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
         StartFollowing(owner);
+}
+
+void CompanionAI::EnterEvadeMode(EvadeReason why)
+{
+    if (!_EnterEvadeMode(why))
+        return;
+
+    if (Player* owner = ObjectAccessor::GetPlayer(*me, _ownerGuid))
+        StartFollowing(owner);
+    else
+        me->GetMotionMaster()->MoveTargetedHome();
+
+    Reset();
+}
+
+void CompanionAI::AssistAgainst(Unit* target)
+{
+    if (!IsRecruited() || !me->IsAlive() || me->HasReactState(REACT_PASSIVE))
+        return;
+
+    if (me->CanCreatureAttack(target))
+        me->EngageWithTarget(target);
 }
 
 bool CompanionAI::OnGossipHello(Player* player)

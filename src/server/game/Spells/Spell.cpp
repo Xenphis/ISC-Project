@@ -21,6 +21,7 @@
 #include "Battleground.h"
 #include "CellImpl.h"
 #include "Common.h"
+#include "CompanionMgr.h"
 #include "ConditionMgr.h"
 #include "CreatureAI.h"
 #include "Containers.h"
@@ -3394,10 +3395,14 @@ void Spell::_cast(bool skipCheck)
         // This prevents spells such as Hunter's Mark from triggering pet attack
         if (GetSpellInfo()->DmgClass != SPELL_DAMAGE_CLASS_NONE)
             if (Unit* target = m_targets.GetUnitTarget())
+            {
                 for (Unit* controlled : playerCaster->m_Controlled)
                     if (Creature* cControlled = controlled->ToCreature())
                         if (CreatureAI* controlledAI = cControlled->AI())
                                 controlledAI->OwnerAttacked(target);
+
+                sCompanionMgr->AssistOwner(playerCaster, target);
+            }
     }
 
     SetExecutedCurrently(true);

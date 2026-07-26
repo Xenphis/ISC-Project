@@ -91,6 +91,21 @@ std::vector<ObjectGuid> CompanionMgr::GetCompanions(ObjectGuid playerGuid) const
     return itr != _activeCompanions.end() ? itr->second : std::vector<ObjectGuid>();
 }
 
+void CompanionMgr::AssistOwner(Player* owner, Unit* target)
+{
+    if (!owner || !target || _activeCompanions.empty())
+        return;
+
+    auto itr = _activeCompanions.find(owner->GetGUID());
+    if (itr == _activeCompanions.end())
+        return;
+
+    for (ObjectGuid guid : itr->second)
+        if (Creature* companion = ObjectAccessor::GetCreature(*owner, guid))
+            if (CompanionAI* ai = dynamic_cast<CompanionAI*>(companion->AI()))
+                ai->AssistAgainst(target);
+}
+
 void CompanionMgr::OnCompanionDismissed(ObjectGuid playerGuid, ObjectGuid companionGuid)
 {
     auto itr = _activeCompanions.find(playerGuid);
