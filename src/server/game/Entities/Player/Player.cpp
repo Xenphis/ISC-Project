@@ -6270,7 +6270,7 @@ void Player::CheckAreaExplore()
 void Player::CheckOutdoorsAuraRequirements()
 {
     if (sWorld->getBoolConfig(CONFIG_VMAP_INDOOR_CHECK))
-        RemoveAurasWithAttribute(IsOutdoors() ? SPELL_ATTR0_INDOORS_ONLY : SPELL_ATTR0_OUTDOORS_ONLY);
+        RemoveAurasWithAttribute(IsOutdoors() ? SPELL_ATTR0_ONLY_INDOORS : SPELL_ATTR0_ONLY_OUTDOORS);
 }
 
 uint32 Player::TeamForRace(uint8 race)
