@@ -4093,7 +4093,7 @@ void SpellMgr::LoadSpellInfoCorrections()
         // spell should dispel area aura, but doesn't have the attribute
         // may be db data bug, or blizz may keep reapplying area auras every update with checking immunity
         // that will be clear if we get more spells with problem like this
-        spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
+        spellInfo->AttributesEx |= SPELL_ATTR1_IMMUNITY_PURGES_EFFECT;
     });
 
     // Blizzard (Thorim)
@@ -4307,7 +4307,7 @@ void SpellMgr::LoadSpellInfoCorrections()
     ApplySpellFix({ 69783, 69797, 69799, 69802 }, [](SpellInfo* spellInfo)
     {
         // Those spells are cast on creatures with same entry as caster while they have TARGET_UNIT_NEARBY_ENTRY.
-        spellInfo->AttributesEx |= SPELL_ATTR1_CANT_TARGET_SELF;
+        spellInfo->AttributesEx |= SPELL_ATTR1_EXCLUDE_CASTER;
     });
 
     // Awaken Plagued Zombies
