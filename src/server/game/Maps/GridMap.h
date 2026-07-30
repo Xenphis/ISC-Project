@@ -30,12 +30,14 @@ namespace G3D { class Plane; }
 class TC_GAME_API GridMap
 {
     uint32  _flags;
-    union{
+    union
+    {
         float* m_V9;
         uint16* m_uint16_V9;
         uint8* m_uint8_V9;
     };
-    union{
+    union
+    {
         float* m_V8;
         uint16* m_uint16_V8;
         uint8* m_uint8_V8;
@@ -70,7 +72,7 @@ class TC_GAME_API GridMap
     bool isHole(int row, int col) const;
 
     // Get height functions and pointers
-    typedef float (GridMap::*GetHeightPtr) (float x, float y) const;
+    typedef float (GridMap::* GetHeightPtr) (float x, float y) const;
     GetHeightPtr _gridGetHeight;
     float getHeightFromFloat(float x, float y) const;
     float getHeightFromUint16(float x, float y) const;
@@ -92,10 +94,10 @@ public:
     void unloadData();
 
     uint16 getArea(float x, float y) const;
-    inline float getHeight(float x, float y) const {return (this->*_gridGetHeight)(x, y);}
+    float getHeight(float x, float y) const { return (this->*_gridGetHeight)(x, y); }
     float getMinHeight(float x, float y) const;
     float getLiquidLevel(float x, float y) const;
-    ZLiquidStatus GetLiquidStatus(float x, float y, float z, Optional<map_liquidHeaderTypeFlags> ReqLiquidType, LiquidData* data = nullptr, float collisionHeight = 2.03128f); // DEFAULT_COLLISION_HEIGHT in Object.h
+    ZLiquidStatus GetLiquidStatus(float x, float y, float z, Optional<map_liquidHeaderTypeFlags> ReqLiquidType, LiquidData* data = nullptr, float collisionHeight = 2.03128f) const; // DEFAULT_COLLISION_HEIGHT in Object.h
 };
 
 #endif // TRINITY_GRID_MAP_H

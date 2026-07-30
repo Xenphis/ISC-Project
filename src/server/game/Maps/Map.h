@@ -21,25 +21,27 @@
 #include "Define.h"
 
 #include "Cell.h"
+#include "DatabaseEnvFwd.h"
 #include "DynamicTree.h"
 #include "GridDefines.h"
 #include "GridRefManager.h"
 #include "MapDefines.h"
+#include "MapReference.h"
 #include "MapRefManager.h"
 #include "MPSCQueue.h"
 #include "ObjectGuid.h"
-#include "Optional.h"
 #include "SharedDefines.h"
 #include "SpawnData.h"
+#include "StringFormat.h"
 #include "Timer.h"
-#include "Transaction.h"
 #include "UniqueTrackablePtr.h"
 #include "WorldStateDefines.h"
 #include <bitset>
 #include <list>
 #include <map>
 #include <memory>
-#include <mutex>
+#include <set>
+#include <unordered_set>
 
 class Battleground;
 class BattlegroundMap;
