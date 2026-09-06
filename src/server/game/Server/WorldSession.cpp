@@ -50,6 +50,9 @@
 #include "Player.h"
 #include "Realm.h"
 #include "ScriptMgr.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 #include "SocialMgr.h"
 #include "QueryHolder.h"
 #include "Vehicle.h"
@@ -244,6 +247,17 @@ void WorldSession::SendPacket(WorldPacket const* packet)
 
     sScriptMgr->OnPacketSend(this, *packet);
 
+#ifdef ELUNA
+    if (Player* plr = GetPlayer())
+    {
+        if (Eluna* e = plr->GetEluna())
+        {
+            if (!e->OnPacketSend(this, *packet))
+                return;
+        }
+    }
+#endif
+
     TC_LOG_TRACE("network.opcode", "S->C: {} {}", GetPlayerInfo(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet->GetOpcode())));
     m_Socket->SendPacket(*packet);
 }
@@ -321,6 +335,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         if(AntiDOS.EvaluateOpcode(*packet, currentTime))
                         {
                             sScriptMgr->OnPacketReceive(this, *packet);
+#ifdef ELUNA
+                            if (Eluna* e = sWorld->GetEluna())
+                                if (!e->OnPacketReceive(this, *packet))
+                                    break;
+#endif
                             opHandle->Call(this, *packet);
                             LogUnprocessedTail(packet);
                         }
@@ -337,6 +356,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     {
                         // not expected _player or must checked in packet hanlder
                         sScriptMgr->OnPacketReceive(this, *packet);
+#ifdef ELUNA
+                        if (Eluna* e = sWorld->GetEluna())
+                            if (!e->OnPacketReceive(this, *packet))
+                                break;
+#endif
                         opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
                     }
@@ -351,6 +375,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
                         sScriptMgr->OnPacketReceive(this, *packet);
+#ifdef ELUNA
+                        if (Eluna* e = sWorld->GetEluna())
+                            if (!e->OnPacketReceive(this, *packet))
+                                break;
+#endif
                         opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
                     }
@@ -373,6 +402,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
                         sScriptMgr->OnPacketReceive(this, *packet);
+#ifdef ELUNA
+                        if (Eluna* e = sWorld->GetEluna())
+                            if (!e->OnPacketReceive(this, *packet))
+                                break;
+#endif
                         opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
                     }

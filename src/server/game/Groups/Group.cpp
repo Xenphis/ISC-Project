@@ -42,6 +42,9 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 
 Group::Group() : m_leaderGuid(), m_leaderName(""), m_groupType(GROUPTYPE_NORMAL),
 m_dungeonDifficulty(DUNGEON_DIFFICULTY_NORMAL), m_raidDifficulty(RAID_DIFFICULTY_10MAN_NORMAL),
@@ -189,6 +192,11 @@ bool Group::Create(Player* leader)
     }
     else if (!AddMember(leader))
         return false;
+
+#ifdef ELUNA
+    if (Eluna* e = sWorld->GetEluna())
+        e->OnCreate(this, m_leaderGuid, m_groupType);
+#endif
 
     return true;
 }

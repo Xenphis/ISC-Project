@@ -42,6 +42,10 @@
 #include "World.h"
 #include "WorldPacket.h"
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
 enum StableResultCode
 {
     STABLE_ERR_MONEY        = 0x01,                         // "you don't have enough money"
@@ -180,6 +184,11 @@ void WorldSession::HandleGossipHelloOpcode(WorldPackets::NPC::Hello& packet)
     }
 
     _player->PlayerTalkClass->ClearMenus();
+#ifdef ELUNA
+    if (Eluna* e = GetPlayer()->GetEluna())
+        if (e->OnGossipHello(_player, unit))
+            return;
+#endif
     if (!unit->AI()->OnGossipHello(_player))
     {
 //        _player->TalkedToCreature(unit->GetEntry(), unit->GetGUID());
