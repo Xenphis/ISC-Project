@@ -19,6 +19,7 @@
 #define TRINITYCORE_MAP_UTILS_H
 
 #include <type_traits>
+#include <utility>
 
 namespace Trinity::Containers
 {
