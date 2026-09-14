@@ -1886,6 +1886,7 @@ class TC_GAME_API Unit : public WorldObject
         AreaTriggerList m_areaTrigger;
 
         typedef std::list<GameObject*> GameObjectList;
+        void RemoveGameObjectImpl(GameObject* gameObj, bool del);
         GameObjectList m_gameObj;
 
         uint32 m_transformSpell;
